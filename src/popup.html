@@ -5,14 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPFS App Launcher</title>
     <style>
+        :root {
+            /* Light theme variables */
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #333333;
+            --text-secondary: #6c757d;
+            --text-tertiary: #95a5a6;
+            --border-primary: #e1e8ed;
+            --border-secondary: #f1f3f4;
+            --accent-primary: #3498db;
+            --accent-hover: #2980b9;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --danger-bg: #fff5f5;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(52, 152, 219, 0.15);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .dark-theme {
+            /* Dark theme variables */
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #404040;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #808080;
+            --border-primary: #404040;
+            --border-secondary: #505050;
+            --accent-primary: #5dade2;
+            --accent-hover: #3498db;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --danger-bg: #2c1810;
+            --shadow-light: rgba(0, 0, 0, 0.3);
+            --shadow-medium: rgba(93, 173, 226, 0.2);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * {
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
         body {
             width: 400px;
             min-height: 500px;
             margin: 0;
             padding: 16px;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8f9fa;
-            color: #333;
+            background: var(--bg-primary);
+            color: var(--text-primary);
         }
         
         .header {
@@ -25,11 +71,50 @@
         .title {
             font-size: 18px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            padding: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 8px;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--bg-secondary);
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .action-button {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            padding: 6px 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        
+        .action-button:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
         }
         
         .add-button {
-            background: #3498db;
+            background: var(--accent-primary);
             color: white;
             border: none;
             border-radius: 6px;
@@ -40,17 +125,25 @@
         }
         
         .add-button:hover {
-            background: #2980b9;
+            background: var(--accent-hover);
         }
         
         .search-box {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-primary);
             border-radius: 6px;
             margin-bottom: 16px;
             font-size: 14px;
             box-sizing: border-box;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px var(--shadow-medium);
         }
         
         .app-grid {
@@ -61,19 +154,19 @@
         }
         
         .app-flag {
-            background: white;
-            border: 1px solid #e1e8ed;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
             border-radius: 12px;
             padding: 16px;
             cursor: pointer;
             transition: all 0.2s;
             position: relative;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px var(--shadow-light);
         }
         
         .app-flag:hover {
-            border-color: #3498db;
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 12px var(--shadow-medium);
             transform: translateY(-1px);
         }
         
@@ -86,7 +179,7 @@
         .app-icon {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--gradient-primary);
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -112,7 +205,7 @@
         .app-name {
             font-size: 14px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--text-primary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -121,7 +214,7 @@
         
         .app-url {
             font-size: 12px;
-            color: #7f8c8d;
+            color: var(--text-secondary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -129,7 +222,7 @@
         
         .app-versions {
             font-size: 11px;
-            color: #95a5a6;
+            color: var(--text-tertiary);
             margin-top: 2px;
         }
         
@@ -144,8 +237,8 @@
             height: 28px;
             border: none;
             border-radius: 6px;
-            background: #f8f9fa;
-            color: #6c757d;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -154,21 +247,21 @@
         }
         
         .action-btn:hover {
-            background: #e9ecef;
-            color: #495057;
+            background: var(--border-primary);
+            color: var(--text-primary);
         }
         
         .launch-btn:hover {
-            background: #3498db;
+            background: var(--accent-primary);
             color: white;
         }
         
         .context-menu {
             position: fixed;
-            background: white;
-            border: 1px solid #e1e8ed;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
             border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 20px var(--shadow-light);
             z-index: 1000;
             min-width: 180px;
             padding: 4px 0;
@@ -178,8 +271,8 @@
             padding: 8px 12px;
             font-size: 12px;
             font-weight: 600;
-            color: #6c757d;
-            border-bottom: 1px solid #f1f3f4;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-secondary);
             margin-bottom: 4px;
         }
         
@@ -191,7 +284,7 @@
             text-align: left;
             cursor: pointer;
             font-size: 14px;
-            color: #333;
+            color: var(--text-primary);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -199,20 +292,20 @@
         }
         
         .menu-item:hover {
-            background: #f8f9fa;
+            background: var(--bg-tertiary);
         }
         
         .menu-item.danger {
-            color: #dc3545;
+            color: var(--danger);
         }
         
         .menu-item.danger:hover {
-            background: #fff5f5;
+            background: var(--danger-bg);
         }
         
         .menu-separator {
             height: 1px;
-            background: #f1f3f4;
+            background: var(--border-secondary);
             margin: 4px 0;
         }
         
@@ -475,12 +568,77 @@
             background: #e74c3c;
             color: white;
         }
+        
+        /* Settings Modal Styles */
+        .settings-section {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-secondary);
+        }
+        
+        .settings-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .settings-section h4 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .settings-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .settings-help {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 8px;
+        }
+        
+        .settings-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+        
+        .settings-select {
+            padding: 6px 8px;
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        
+        .about-info {
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .about-info > div {
+            margin-bottom: 4px;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="title">IPFS App Launcher</div>
-        <button class="add-button" id="addButton">+ Add App</button>
+        <div class="title">
+            IPFS App Launcher
+            <button class="theme-toggle" id="themeToggle" title="Toggle theme">🌙</button>
+        </div>
+        <div class="header-actions">
+            <button class="action-button" id="settingsButton" title="Settings">⚙️</button>
+            <button class="add-button" id="addButton">+ Add App</button>
+        </div>
     </div>
     
     <input type="text" class="search-box" id="searchBox" placeholder="Search apps...">
@@ -519,6 +677,51 @@
                     <button type="submit" class="btn btn-primary">Add App</button>
                 </div>
             </form>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Settings</div>
+                <button class="close-button" id="closeSettingsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h4>Data Management</h4>
+                    <div class="settings-row">
+                        <button class="btn btn-secondary" id="exportButton">📤 Export Data</button>
+                        <button class="btn btn-secondary" id="importButton">📥 Import Data</button>
+                    </div>
+                    <div class="settings-help">
+                        Export your apps and settings to a backup file, or import from a previous backup.
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4>Theme</h4>
+                    <div class="settings-row">
+                        <label class="settings-label">
+                            Theme:
+                            <select class="settings-select" id="themeSelect">
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
+                                <option value="auto">Auto (System)</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4>About</h4>
+                    <div class="about-info">
+                        <div><strong>IPFS App Launcher</strong></div>
+                        <div>Version 1.0.0</div>
+                        <div>Elegant app launcher with petname support for IPFS applications</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
