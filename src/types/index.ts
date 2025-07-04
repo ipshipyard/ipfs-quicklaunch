@@ -13,7 +13,8 @@ export interface AppVersion {
   id: string;
   name: string;
   url: string;
-  hash?: string;
+  cid?: string; // IPFS CID in base32 format
+  hash?: string; // Legacy hash field for backward compatibility
   isDefault: boolean;
   createdAt: Date;
 }
@@ -48,6 +49,7 @@ export interface CreateVersionRequest {
   appId: string;
   name: string;
   url: string;
-  hash?: string;
+  cid?: string; // IPFS CID in base32 format
+  hash?: string; // Legacy hash field for backward compatibility
   makeDefault?: boolean;
 }

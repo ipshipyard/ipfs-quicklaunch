@@ -1,9 +1,11 @@
 import { App } from './types';
 import { storage } from './storage';
+import { AppFlag } from './components/AppFlag';
 
 class PopupManager {
   private apps: App[] = [];
   private filteredApps: App[] = [];
+  private appFlags: Map<string, AppFlag> = new Map();
 
   constructor() {
     this.init();
@@ -70,7 +72,12 @@ class PopupManager {
     this.filteredApps = this.apps.filter(app => 
       app.petname.toLowerCase().includes(searchTerm) ||
       app.description?.toLowerCase().includes(searchTerm) ||
-      app.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+      app.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
+      app.versions.some(version => 
+        version.name.toLowerCase().includes(searchTerm) ||
+        version.url.toLowerCase().includes(searchTerm) ||
+        (version.cid && version.cid.toLowerCase().includes(searchTerm))
+      )
     );
     this.render();
   }
@@ -107,15 +114,35 @@ class PopupManager {
     }
   }
 
-  private async handleAppClick(app: App) {
-    const defaultVersion = app.versions.find(v => v.isDefault) || app.versions[0];
-    if (defaultVersion) {
+  private async handleAppLaunch(app: App, versionId?: string) {
+    let version = app.versions.find(v => v.isDefault) || app.versions[0];
+    
+    if (versionId) {
+      version = app.versions.find(v => v.id === versionId) || version;
+    }
+    
+    if (version) {
       try {
-        await chrome.tabs.create({ url: defaultVersion.url });
+        await chrome.tabs.create({ url: version.url });
         await storage.updateLastUsed(app.id);
       } catch (error) {
         console.error('Failed to open app:', error);
       }
+    }
+  }
+
+  private async handleAppEdit(app: App) {
+    // TODO: Show edit app modal
+    console.log('Edit app:', app.petname);
+  }
+
+  private async handleAppDelete(app: App) {
+    try {
+      await storage.deleteApp(app.id);
+      await this.loadApps();
+      this.render();
+    } catch (error) {
+      console.error('Failed to delete app:', error);
     }
   }
 
@@ -132,27 +159,22 @@ class PopupManager {
       appGrid.style.display = 'grid';
       emptyState.style.display = 'none';
       
-      appGrid.innerHTML = this.filteredApps.map(app => this.renderAppFlag(app)).join('');
+      // Clear existing flags
+      appGrid.innerHTML = '';
+      this.appFlags.clear();
       
-      // Add click listeners to app flags
+      // Create new app flags
       this.filteredApps.forEach(app => {
-        const flagElement = document.getElementById(`app-${app.id}`);
-        flagElement?.addEventListener('click', () => this.handleAppClick(app));
+        const appFlag = new AppFlag(app, {
+          onLaunch: (app, versionId) => this.handleAppLaunch(app, versionId),
+          onEdit: (app) => this.handleAppEdit(app),
+          onDelete: (app) => this.handleAppDelete(app)
+        });
+        
+        this.appFlags.set(app.id, appFlag);
+        appGrid.appendChild(appFlag.getElement());
       });
     }
-  }
-
-  private renderAppFlag(app: App): string {
-    const iconLetter = app.petname.charAt(0).toUpperCase();
-    const versionCount = app.versions.length;
-    const versionText = versionCount > 1 ? ` (${versionCount} versions)` : '';
-    
-    return `
-      <div class="app-flag" id="app-${app.id}" title="${app.description || app.petname}${versionText}">
-        <div class="app-icon">${iconLetter}</div>
-        <div class="app-name">${app.petname}</div>
-      </div>
-    `;
   }
 }
 

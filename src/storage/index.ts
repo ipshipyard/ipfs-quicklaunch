@@ -1,4 +1,5 @@
 import { App, AppStorage, CreateAppRequest, CreateVersionRequest, UpdateAppRequest, UserSettings } from '../types';
+import { IPFSUtils } from '../utils/ipfs';
 
 const STORAGE_KEY = 'app_launcher_data';
 
@@ -76,6 +77,7 @@ export class StorageManager {
         id: versionId,
         name: request.versionName || 'Default',
         url: request.url,
+        cid: IPFSUtils.extractCIDFromUrl(request.url) || undefined,
         hash: undefined,
         isDefault: true,
         createdAt: now
@@ -131,6 +133,7 @@ export class StorageManager {
       id: versionId,
       name: request.name,
       url: request.url,
+      cid: request.cid || IPFSUtils.extractCIDFromUrl(request.url) || undefined,
       hash: request.hash,
       isDefault: request.makeDefault || false,
       createdAt: new Date()
