@@ -1,5 +1,5 @@
-import { App, AppStorage, CreateAppRequest, CreateVersionRequest, UpdateAppRequest, UserSettings } from '../types';
-import { IPFSUtils } from '../utils/ipfs';
+import { App, AppStorage, CreateAppRequest, CreateVersionRequest, UpdateAppRequest, UserSettings } from '../types/index.js';
+import { IPFSUtils } from '../utils/ipfs.js';
 
 const STORAGE_KEY = 'app_launcher_data';
 

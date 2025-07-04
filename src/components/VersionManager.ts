@@ -1,6 +1,6 @@
-import { App, CreateVersionRequest } from '../types';
-import { storage } from '../storage';
-import { IPFSUtils } from '../utils/ipfs';
+import { App, CreateVersionRequest } from '../types/index.js';
+import { storage } from '../storage/index.js';
+import { IPFSUtils } from '../utils/ipfs.js';
 
 export class VersionManager {
   private app: App;

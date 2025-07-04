@@ -1,6 +1,6 @@
-import { App } from './types';
-import { storage } from './storage';
-import { AppFlag } from './components/AppFlag';
+import { App } from './types/index.js';
+import { storage } from './storage/index.js';
+import { AppFlag } from './components/AppFlag.js';
 
 class PopupManager {
   private apps: App[] = [];

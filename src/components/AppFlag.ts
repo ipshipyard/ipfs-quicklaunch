@@ -1,5 +1,5 @@
-import { App } from '../types';
-import { VersionManager } from './VersionManager';
+import { App } from '../types/index.js';
+import { VersionManager } from './VersionManager.js';
 
 export class AppFlag {
   private app: App;
