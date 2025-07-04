@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "App Launcher with Petnames",
+  "version": "1.0.0",
+  "description": "Local app launcher with petname support and elegant flag UI",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "App Launcher"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

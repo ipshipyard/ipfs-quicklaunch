@@ -1,0 +1,23 @@
+{
+  "name": "app-launcher-extension",
+  "version": "1.0.0",
+  "description": "Browser extension for local app launcher with petname support",
+  "main": "src/background.js",
+  "scripts": {
+    "build": "tsc && cp src/manifest.json dist/ && cp src/popup.html dist/ && cp -r src/icons dist/",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.248",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "browser-extension",
+    "chrome-extension",
+    "app-launcher",
+    "petnames"
+  ],
+  "author": "",
+  "license": "MIT"
+}
