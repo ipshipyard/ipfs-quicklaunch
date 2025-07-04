@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "App Launcher with Petnames",
+  "name": "IPFS App Launcher",
   "version": "1.0.0",
-  "description": "Local app launcher with petname support and elegant flag UI",
+  "description": "IPFS app launcher with petname support and elegant flag UI",
   "permissions": [
     "storage",
     "tabs",
@@ -10,7 +10,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "App Launcher"
+    "default_title": "IPFS App Launcher"
   },
   "background": {
     "service_worker": "background.js"

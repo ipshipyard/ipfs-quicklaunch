@@ -1,7 +1,7 @@
 {
-  "name": "app-launcher-extension",
+  "name": "ipfs-app-launcher-extension",
   "version": "1.0.0",
-  "description": "Browser extension for local app launcher with petname support",
+  "description": "Browser extension for IPFS app launcher with petname support",
   "main": "src/background.js",
   "scripts": {
     "build": "tsc && cp src/manifest.json dist/ && cp src/popup.html dist/ && cp -r src/icons dist/",
@@ -15,7 +15,7 @@
   "keywords": [
     "browser-extension",
     "chrome-extension",
-    "app-launcher",
+    "ipfs-app-launcher",
     "petnames"
   ],
   "author": "",

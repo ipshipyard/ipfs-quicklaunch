@@ -1,7 +1,7 @@
-# Browser Extension Plan: Local App Launcher with Petnames
+# Browser Extension Plan: IPFS App Launcher with Petnames
 
 ## Overview
-A browser extension that serves as a local launcher for apps with petname support, featuring an elegant modern flag UI for bookmarking apps with custom names and URLs, including support for multiple versions per app.
+A browser extension that serves as an IPFS app launcher with petname support, featuring an elegant modern flag UI for bookmarking apps with custom names and URLs, including support for multiple versions per app.
 
 ## Core Features & Requirements
 
