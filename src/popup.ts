@@ -3,11 +3,13 @@ import { storage } from './storage/index.js';
 import { AppFlag } from './components/AppFlag.js';
 import { themeManager, Theme } from './utils/theme.js';
 import { ExportManager } from './utils/export.js';
+import { formStateManager } from './utils/formState.js';
 
 class PopupManager {
   private apps: App[] = [];
   private filteredApps: App[] = [];
   private appFlags: Map<string, AppFlag> = new Map();
+  private formCleanupFunctions: Map<string, () => void> = new Map();
 
   constructor() {
     this.init();
@@ -70,10 +72,19 @@ class PopupManager {
     document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
   }
 
-  private showAddModal() {
+  private async showAddModal() {
     const modal = document.getElementById('addAppModal');
-    if (modal) {
+    const form = document.getElementById('addAppForm') as HTMLFormElement;
+    
+    if (modal && form) {
       modal.style.display = 'block';
+      
+      // Restore form state if exists
+      await this.restoreFormState('addAppForm', form);
+      
+      // Set up auto-save for this form
+      this.setupFormAutoSave('addAppForm', form);
+      
       const petnameInput = document.getElementById('petname') as HTMLInputElement;
       petnameInput?.focus();
     }
@@ -83,13 +94,18 @@ class PopupManager {
     const modal = document.getElementById('addAppModal');
     if (modal) {
       modal.style.display = 'none';
+      this.cleanupFormAutoSave('addAppForm');
       this.resetForm();
     }
   }
 
-  private resetForm() {
+  private async resetForm() {
     const form = document.getElementById('addAppForm') as HTMLFormElement;
-    form?.reset();
+    if (form) {
+      form.reset();
+      // Clear saved form state
+      await formStateManager.clearFormState('addAppForm');
+    }
   }
 
   private handleSearch(query: string) {
@@ -132,6 +148,9 @@ class PopupManager {
       this.apps.push(newApp);
       this.filteredApps = [...this.apps];
       this.render();
+      
+      // Clear form state on successful submission
+      await formStateManager.clearFormState('addAppForm');
       this.hideAddModal();
     } catch (error) {
       console.error('Failed to create app:', error);
@@ -367,6 +386,99 @@ class PopupManager {
       this.toggleTheme();
       return;
     }
+  }
+
+  /**
+   * Restore form state from storage
+   */
+  private async restoreFormState(formId: string, form: HTMLFormElement): Promise<void> {
+    try {
+      const savedData = await formStateManager.loadFormState(formId);
+      if (savedData) {
+        formStateManager.restoreFormData(form, savedData);
+        // Show indication that draft was restored
+        this.showTemporaryMessage('Draft restored', 'success');
+      }
+    } catch (error) {
+      console.error('Failed to restore form state:', error);
+    }
+  }
+
+  /**
+   * Set up auto-save for a form
+   */
+  private setupFormAutoSave(formId: string, form: HTMLFormElement): void {
+    // Clean up any existing auto-save first
+    this.cleanupFormAutoSave(formId);
+    
+    // Set up new auto-save
+    const cleanup = formStateManager.setupAutoSave(form, formId);
+    this.formCleanupFunctions.set(formId, cleanup);
+
+    // Listen for save events to show user feedback
+    const handleSave = (event: CustomEvent) => {
+      if (event.detail.formId === formId) {
+        this.showSaveIndicator();
+      }
+    };
+
+    document.addEventListener('formStateSaved', handleSave as EventListener);
+    
+    // Store the event listener cleanup as well
+    const originalCleanup = cleanup;
+    this.formCleanupFunctions.set(formId, () => {
+      originalCleanup();
+      document.removeEventListener('formStateSaved', handleSave as EventListener);
+    });
+  }
+
+  /**
+   * Clean up form auto-save
+   */
+  private cleanupFormAutoSave(formId: string): void {
+    const cleanup = this.formCleanupFunctions.get(formId);
+    if (cleanup) {
+      cleanup();
+      this.formCleanupFunctions.delete(formId);
+    }
+  }
+
+  /**
+   * Show visual indicator that form was auto-saved
+   */
+  private showSaveIndicator(): void {
+    const indicator = document.createElement('div');
+    indicator.textContent = '💾 Draft saved';
+    indicator.style.cssText = `
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      padding: 8px 12px;
+      background: var(--success);
+      color: white;
+      border-radius: 4px;
+      font-size: 12px;
+      z-index: 10001;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    `;
+
+    document.body.appendChild(indicator);
+
+    // Animate in
+    requestAnimationFrame(() => {
+      indicator.style.opacity = '1';
+    });
+
+    // Animate out and remove
+    setTimeout(() => {
+      indicator.style.opacity = '0';
+      setTimeout(() => {
+        if (indicator.parentNode) {
+          indicator.parentNode.removeChild(indicator);
+        }
+      }, 300);
+    }, 1500);
   }
 }
 
