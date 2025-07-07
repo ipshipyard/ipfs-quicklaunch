@@ -5,23 +5,28 @@ export interface App {
   icon?: string;
   versions: AppVersion[];
   tags: string[];
-  createdAt: Date;
-  lastUsed: Date;
+  createdAt: number; // Unix timestamp
+  lastUsed: number; // Unix timestamp
 }
 
 export interface AppVersion {
   id: string;
   name: string;
-  url: string;
-  cid?: string; // IPFS CID in base32 format
+  cid: string; // IPFS CID in base32 format
   hash?: string; // Legacy hash field for backward compatibility
   isDefault: boolean;
-  createdAt: Date;
+  createdAt: number; // Unix timestamp
 }
 
 export interface AppStorage {
   apps: Record<string, App>;
   settings: UserSettings;
+  gatewayConfig: GatewayConfig;
+}
+
+export interface GatewayConfig {
+  defaultGateway: string;
+  customGateways: string[];
 }
 
 export interface UserSettings {
@@ -32,7 +37,7 @@ export interface UserSettings {
 
 export interface CreateAppRequest {
   petname: string;
-  url: string;
+  cid: string;
   description?: string;
   tags?: string[];
   versionName?: string;
@@ -48,8 +53,7 @@ export interface UpdateAppRequest {
 export interface CreateVersionRequest {
   appId: string;
   name: string;
-  url: string;
-  cid?: string; // IPFS CID in base32 format
+  cid: string; // IPFS CID in base32 format
   hash?: string; // Legacy hash field for backward compatibility
   makeDefault?: boolean;
 }

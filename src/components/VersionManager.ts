@@ -33,22 +33,18 @@ export class VersionManager {
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label" for="versionName">Version Name</label>
-                  <input type="text" class="form-input" id="versionName" required placeholder="e.g., v1.2.0, Production">
+                  <input type="text" class="form-input" id="versionName" name="versionName" required placeholder="e.g., v1.2.0, Production">
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="versionUrl">URL</label>
-                  <input type="url" class="form-input" id="versionUrl" required placeholder="https://... or ipfs://...">
+                  <label class="form-label" for="versionCid">IPFS CID</label>
+                  <input type="text" class="form-input" id="versionCid" name="versionCid" required placeholder="bafy...">
+                  <div class="form-help">Base32 CID format preferred.</div>
                 </div>
               </div>
               <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" for="versionCid">IPFS CID (Optional)</label>
-                  <input type="text" class="form-input" id="versionCid" placeholder="bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi">
-                  <div class="form-help">Base32 CID format preferred. Will be auto-detected from URL if not provided.</div>
-                </div>
                 <div class="form-group checkbox-group">
                   <label class="checkbox-label">
-                    <input type="checkbox" id="makeDefault"> Make this the default version
+                    <input type="checkbox" id="makeDefault" name="makeDefault"> Make this the default version
                   </label>
                 </div>
               </div>
@@ -68,12 +64,13 @@ export class VersionManager {
       <div class="version-item" data-version-id="${version.id}">
         <div class="version-header">
           <div class="version-info">
-            <div class="version-name">${version.name}</div>
-            <div class="version-url">${this.formatUrl(version.url)}</div>
-            ${version.cid ? `<div class="version-cid">CID: ${this.formatCID(version.cid)}</div>` : ''}
+            <div class="version-name">
+              ${version.name}
+              ${version.isDefault ? '<span class="version-default-badge">Default</span>' : ''}
+            </div>
+            <div class="version-cid">CID: ${this.formatCID(version.cid)}</div>
             <div class="version-meta">
-              Created: ${new Date(version.createdAt).toLocaleDateString()}
-              ${version.isDefault ? '<span class="default-badge">Default</span>' : ''}
+              Created: ${this.formatDate(version.createdAt)}
             </div>
           </div>
           <div class="version-actions">
@@ -103,14 +100,6 @@ export class VersionManager {
     `).join('');
   }
 
-  private formatUrl(url: string): string {
-    try {
-      const urlObj = new URL(url);
-      return urlObj.hostname + urlObj.pathname;
-    } catch {
-      return url.length > 50 ? url.substring(0, 50) + '...' : url;
-    }
-  }
 
   private formatCID(cid: string): string {
     if (!cid) return '';
@@ -118,6 +107,18 @@ export class VersionManager {
       return cid.substring(0, 8) + '...' + cid.substring(cid.length - 8);
     }
     return cid;
+  }
+
+  private formatDate(timestamp: number): string {
+    try {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+      return date.toLocaleDateString();
+    } catch {
+      return 'Invalid Date';
+    }
   }
 
   private setupEventListeners(): void {
@@ -141,23 +142,13 @@ export class VersionManager {
       }
     });
 
-    // Auto-detect CID from URL
-    const urlInput = this.modal.querySelector('#versionUrl') as HTMLInputElement;
-    const cidInput = this.modal.querySelector('#versionCid') as HTMLInputElement;
-    
-    urlInput?.addEventListener('input', () => {
-      const url = urlInput.value;
-      const detectedCID = IPFSUtils.extractCIDFromUrl(url);
-      if (detectedCID && !cidInput.value) {
-        cidInput.value = detectedCID;
-      }
-    });
 
     // Validate CID input
+    const cidInput = this.modal.querySelector('#versionCid') as HTMLInputElement;
     cidInput?.addEventListener('input', () => {
       const cid = cidInput.value.trim();
       if (cid && !IPFSUtils.isValidCID(cid)) {
-        cidInput.setCustomValidity('Invalid CID format. Please use base32 format (starting with "b").');
+        cidInput.setCustomValidity('Invalid CID format. Please use base32 format (e.g., bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi).');
       } else {
         cidInput.setCustomValidity('');
       }
@@ -178,18 +169,17 @@ export class VersionManager {
     const formData = new FormData(form);
     
     const name = formData.get('versionName') as string;
-    const url = formData.get('versionUrl') as string;
     const cid = (formData.get('versionCid') as string)?.trim();
     const makeDefault = formData.get('makeDefault') === 'on';
 
-    if (!name || !url) {
+    if (!name || !cid) {
       alert('Please fill in all required fields');
       return;
     }
 
-    // Validate CID if provided
-    if (cid && !IPFSUtils.isValidCID(cid)) {
-      alert('Invalid CID format. Please use base32 format.');
+    // Validate CID
+    if (!IPFSUtils.isValidCID(cid)) {
+      alert('Invalid CID format. Please use base32 format (e.g., bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi).');
       return;
     }
 
@@ -197,8 +187,7 @@ export class VersionManager {
       const request: CreateVersionRequest = {
         appId: this.app.id,
         name,
-        url,
-        cid: cid || undefined,
+        cid,
         makeDefault
       };
 
@@ -222,7 +211,8 @@ export class VersionManager {
     switch (action) {
       case 'test':
         try {
-          await chrome.tabs.create({ url: version.url });
+          const url = await storage.buildUrl(version.cid);
+          await chrome.tabs.create({ url });
         } catch (error) {
           console.error('Failed to open version:', error);
         }

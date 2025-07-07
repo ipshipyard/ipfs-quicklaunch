@@ -1,11 +1,12 @@
 export class IPFSUtils {
-  private static readonly BASE32_PATTERN = /^b[a-z2-7]{58}$/;
+  private static readonly BASE32_PATTERN = /^b[a-z2-7]{50,}$/;
   private static readonly BASE58_PATTERN = /^Qm[1-9A-HJ-NP-Za-km-z]{44}$/;
 
   static isValidCID(cid: string): boolean {
     if (!cid) return false;
     
     // Check for base32 CIDv1 (preferred format)
+    // Base32 CIDs start with 'b' and can be 59+ characters long
     if (this.BASE32_PATTERN.test(cid)) {
       return true;
     }
@@ -13,6 +14,11 @@ export class IPFSUtils {
     // Check for base58 CIDv0 (legacy format)
     if (this.BASE58_PATTERN.test(cid)) {
       return true;
+    }
+    
+    // Also allow other valid CID patterns that start with common prefixes
+    if (cid.startsWith('bafy') || cid.startsWith('bafk') || cid.startsWith('bafz') || cid.startsWith('bafm')) {
+      return cid.length >= 50; // Most CIDs are at least 50 characters
     }
     
     return false;
@@ -77,10 +83,9 @@ export class IPFSUtils {
 
   static getPreferredGateways(): string[] {
     return [
-      'https://ipfs.io',
-      'https://gateway.ipfs.io',
-      'https://cloudflare-ipfs.com',
-      'https://dweb.link'
+      'https://dweb.link',
+      'https://inbrowser.link',
+      'https://inbrowser.dev'
     ];
   }
 

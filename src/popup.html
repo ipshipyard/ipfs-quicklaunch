@@ -371,6 +371,9 @@
         .modal-content.large {
             max-width: 600px;
             width: 95%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
         }
         
         .modal-header {
@@ -378,6 +381,15 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+        
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px; /* Space for scrollbar */
+            min-height: 0; /* Allow flexbox shrinking */
+            padding-bottom: 20px; /* Extra space at bottom */
         }
         
         .modal-title {
@@ -418,6 +430,13 @@
             display: flex;
             gap: 8px;
             justify-content: flex-end;
+            margin-top: 16px;
+        }
+        
+        .version-manager-modal .form-actions {
+            margin-top: 20px;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
         
         .btn {
@@ -449,8 +468,6 @@
         
         /* Version Manager Styles */
         .versions-list {
-            max-height: 300px;
-            overflow-y: auto;
             margin-bottom: 24px;
             border: 1px solid #e1e8ed;
             border-radius: 8px;
@@ -475,6 +492,7 @@
         .version-info {
             flex: 1;
             min-width: 0;
+            overflow: hidden;
         }
         
         .version-name {
@@ -482,6 +500,20 @@
             font-size: 14px;
             color: #2c3e50;
             margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .version-default-badge {
+            background: #27ae60;
+            color: white;
+            font-size: 10px;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 10px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         
         .version-url {
@@ -515,6 +547,7 @@
         .add-version-section {
             border-top: 1px solid #e1e8ed;
             padding-top: 20px;
+            margin-top: 20px;
         }
         
         .add-version-section h4 {
@@ -627,6 +660,26 @@
         .about-info > div {
             margin-bottom: 4px;
         }
+        
+        #customGatewayRow {
+            margin-top: 8px;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            border: 1px solid var(--border-primary);
+        }
+        
+        #customGatewayRow .settings-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 0;
+        }
+        
+        #customGatewayRow .form-input {
+            flex: 1;
+            min-width: 200px;
+        }
     </style>
 </head>
 <body>
@@ -665,8 +718,8 @@
                     <input type="text" class="form-input" id="petname" name="petname" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="url">URL</label>
-                    <input type="url" class="form-input" id="url" name="url" required>
+                    <label class="form-label" for="cid">IPFS CID</label>
+                    <input type="text" class="form-input" id="cid" name="cid" required placeholder="bafy...">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="description">Description (Optional)</label>
@@ -720,6 +773,32 @@
                     </div>
                     <div class="settings-help">
                         Export your apps and settings to a backup file, or import from a previous backup.
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4>IPFS Gateway</h4>
+                    <div class="settings-row">
+                        <label class="settings-label">
+                            Default Gateway:
+                            <select class="settings-select" id="gatewaySelect">
+                                <option value="https://ipfs.io/ipfs/">ipfs.io</option>
+                                <option value="https://gateway.ipfs.io/ipfs/">gateway.ipfs.io</option>
+                                <option value="https://cloudflare-ipfs.com/ipfs/">cloudflare-ipfs.com</option>
+                                <option value="https://dweb.link/ipfs/">dweb.link</option>
+                                <option value="custom">Custom Gateway</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="settings-row" id="customGatewayRow" style="display: none;">
+                        <label class="settings-label">
+                            Custom Gateway URL:
+                            <input type="url" class="form-input" id="customGatewayInput" placeholder="https://your-gateway.com/ipfs/">
+                        </label>
+                        <button type="button" class="btn btn-secondary" id="saveCustomGateway">Save</button>
+                    </div>
+                    <div class="settings-help">
+                        Choose which IPFS gateway to use for launching apps from CIDs. Custom gateway URL should end with "/ipfs/".
                     </div>
                 </div>
                 

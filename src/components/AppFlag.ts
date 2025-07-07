@@ -1,5 +1,6 @@
 import { App } from '../types/index.js';
 import { VersionManager } from './VersionManager.js';
+import { storage } from '../storage/index.js';
 
 export class AppFlag {
   private app: App;
@@ -38,7 +39,7 @@ export class AppFlag {
         <div class="app-icon">${this.getAppIcon()}</div>
         <div class="app-details">
           <div class="app-name" title="${this.app.petname}">${this.app.petname}</div>
-          <div class="app-url" title="${defaultVersion?.url || ''}">${this.formatUrl(defaultVersion?.url || '')}</div>
+          <div class="app-url" title="${defaultVersion?.cid || ''}">${this.formatCid(defaultVersion?.cid || '')}</div>
           ${versionCount > 1 ? `<div class="app-versions">${versionCount} versions</div>` : ''}
         </div>
         <div class="app-actions">
@@ -75,13 +76,9 @@ export class AppFlag {
     return this.app.petname.charAt(0).toUpperCase();
   }
 
-  private formatUrl(url: string): string {
-    try {
-      const urlObj = new URL(url);
-      return urlObj.hostname;
-    } catch {
-      return url.length > 30 ? url.substring(0, 30) + '...' : url;
-    }
+  private formatCid(cid: string): string {
+    if (!cid) return '';
+    return cid.length > 20 ? cid.substring(0, 20) + '...' : cid;
   }
 
   private setupEventListeners(): void {
@@ -121,7 +118,7 @@ export class AppFlag {
         <button class="menu-item version-item ${version.isDefault ? 'default' : ''}" 
                 data-version-id="${version.id}">
           <div class="version-name">${version.name}</div>
-          <div class="version-url">${this.formatUrl(version.url)}</div>
+          <div class="version-url">${this.formatCid(version.cid)}</div>
           ${version.isDefault ? '<span class="default-badge">Default</span>' : ''}
         </button>
       `).join('')}
@@ -259,7 +256,9 @@ export class AppFlag {
       case 'copy-url':
         const defaultVersion = this.app.versions.find(v => v.isDefault) || this.app.versions[0];
         if (defaultVersion) {
-          navigator.clipboard.writeText(defaultVersion.url);
+          storage.buildUrl(defaultVersion.cid).then(url => {
+            navigator.clipboard.writeText(url);
+          });
         }
         break;
       case 'manage-versions':

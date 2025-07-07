@@ -1,5 +1,4 @@
-import { App, AppStorage, CreateAppRequest, CreateVersionRequest, UpdateAppRequest, UserSettings } from '../types/index.js';
-import { IPFSUtils } from '../utils/ipfs.js';
+import { App, AppStorage, CreateAppRequest, CreateVersionRequest, UpdateAppRequest, UserSettings, GatewayConfig } from '../types/index.js';
 
 const STORAGE_KEY = 'app_launcher_data';
 
@@ -48,6 +47,15 @@ export class StorageManager {
         theme: 'light',
         viewMode: 'grid',
         defaultVersionBehavior: 'launch'
+      },
+      gatewayConfig: {
+        defaultGateway: 'https://ipfs.io/ipfs/',
+        customGateways: [
+          'https://ipfs.io/ipfs/',
+          'https://gateway.ipfs.io/ipfs/',
+          'https://cloudflare-ipfs.com/ipfs/',
+          'https://dweb.link/ipfs/'
+        ]
       }
     };
   }
@@ -64,7 +72,7 @@ export class StorageManager {
 
   async createApp(request: CreateAppRequest): Promise<App> {
     const data = this.cache || await this.load();
-    const now = new Date();
+    const now = Date.now();
     const appId = this.generateId();
     const versionId = this.generateId();
 
@@ -76,8 +84,7 @@ export class StorageManager {
       versions: [{
         id: versionId,
         name: request.versionName || 'Default',
-        url: request.url,
-        cid: IPFSUtils.extractCIDFromUrl(request.url) || undefined,
+        cid: request.cid,
         hash: undefined,
         isDefault: true,
         createdAt: now
@@ -132,11 +139,10 @@ export class StorageManager {
     const newVersion = {
       id: versionId,
       name: request.name,
-      url: request.url,
-      cid: request.cid || IPFSUtils.extractCIDFromUrl(request.url) || undefined,
+      cid: request.cid,
       hash: request.hash,
       isDefault: request.makeDefault || false,
-      createdAt: new Date()
+      createdAt: Date.now()
     };
 
     if (request.makeDefault) {
@@ -153,7 +159,7 @@ export class StorageManager {
     const app = data.apps[appId];
     
     if (app) {
-      app.lastUsed = new Date();
+      app.lastUsed = Date.now();
       await this.save(data);
     }
   }
@@ -168,6 +174,23 @@ export class StorageManager {
     data.settings = { ...data.settings, ...settings };
     await this.save(data);
     return data.settings;
+  }
+
+  async getGatewayConfig(): Promise<GatewayConfig> {
+    const data = this.cache || await this.load();
+    return data.gatewayConfig;
+  }
+
+  async updateGatewayConfig(config: Partial<GatewayConfig>): Promise<GatewayConfig> {
+    const data = this.cache || await this.load();
+    data.gatewayConfig = { ...data.gatewayConfig, ...config };
+    await this.save(data);
+    return data.gatewayConfig;
+  }
+
+  async buildUrl(cid: string): Promise<string> {
+    const gatewayConfig = await this.getGatewayConfig();
+    return `${gatewayConfig.defaultGateway}${cid}`;
   }
 
   private generateId(): string {

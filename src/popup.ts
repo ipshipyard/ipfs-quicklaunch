@@ -43,6 +43,8 @@ class PopupManager {
     const exportButton = document.getElementById('exportButton');
     const importButton = document.getElementById('importButton');
     const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
+    const gatewaySelect = document.getElementById('gatewaySelect') as HTMLSelectElement;
+    const saveCustomGateway = document.getElementById('saveCustomGateway');
     const editAppModal = document.getElementById('editAppModal');
     const closeEditModal = document.getElementById('closeEditModal');
     const cancelEditButton = document.getElementById('cancelEditButton');
@@ -59,6 +61,8 @@ class PopupManager {
     exportButton?.addEventListener('click', () => this.handleExport());
     importButton?.addEventListener('click', () => this.handleImport());
     themeSelect?.addEventListener('change', (e) => this.handleThemeChange((e.target as HTMLSelectElement).value as Theme));
+    gatewaySelect?.addEventListener('change', (e) => this.handleGatewayChange((e.target as HTMLSelectElement).value));
+    saveCustomGateway?.addEventListener('click', () => this.handleSaveCustomGateway());
     closeEditModal?.addEventListener('click', () => this.hideEditModal());
     cancelEditButton?.addEventListener('click', () => this.hideEditModal());
     editAppForm?.addEventListener('submit', (e) => this.handleEditApp(e));
@@ -130,8 +134,7 @@ class PopupManager {
       app.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
       app.versions.some(version => 
         version.name.toLowerCase().includes(searchTerm) ||
-        version.url.toLowerCase().includes(searchTerm) ||
-        (version.cid && version.cid.toLowerCase().includes(searchTerm))
+        version.cid.toLowerCase().includes(searchTerm)
       )
     );
     this.render();
@@ -144,10 +147,10 @@ class PopupManager {
     const formData = new FormData(form);
     
     const petname = formData.get('petname') as string;
-    const url = formData.get('url') as string;
+    const cid = formData.get('cid') as string;
     const description = formData.get('description') as string;
 
-    if (!petname || !url) {
+    if (!petname || !cid) {
       alert('Please fill in all required fields');
       return;
     }
@@ -155,7 +158,7 @@ class PopupManager {
     try {
       const newApp = await storage.createApp({
         petname,
-        url,
+        cid,
         description: description || undefined
       });
 
@@ -181,7 +184,8 @@ class PopupManager {
     
     if (version) {
       try {
-        await chrome.tabs.create({ url: version.url });
+        const url = await storage.buildUrl(version.cid);
+        await chrome.tabs.create({ url });
         await storage.updateLastUsed(app.id);
       } catch (error) {
         console.error('Failed to open app:', error);
@@ -265,13 +269,41 @@ class PopupManager {
     themeToggle.title = `Current theme: ${currentTheme}. Click to switch.`;
   }
 
-  private showSettingsModal(): void {
+  private async showSettingsModal(): Promise<void> {
     const settingsModal = document.getElementById('settingsModal');
     const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
+    const gatewaySelect = document.getElementById('gatewaySelect') as HTMLSelectElement;
     
-    if (settingsModal && themeSelect) {
+    if (settingsModal && themeSelect && gatewaySelect) {
       // Update theme select to current value
       themeSelect.value = themeManager.getTheme();
+      
+      // Update gateway select to current value
+      try {
+        const gatewayConfig = await storage.getGatewayConfig();
+        const currentGateway = gatewayConfig.defaultGateway;
+        
+        // Check if current gateway is in the predefined options
+        const predefinedOptions = ['https://ipfs.io/ipfs/', 'https://gateway.ipfs.io/ipfs/', 'https://cloudflare-ipfs.com/ipfs/', 'https://dweb.link/ipfs/'];
+        
+        if (predefinedOptions.includes(currentGateway)) {
+          gatewaySelect.value = currentGateway;
+        } else {
+          // It's a custom gateway - add it to the options if not already there
+          const existingOption = Array.from(gatewaySelect.options).find(opt => opt.value === currentGateway);
+          if (!existingOption) {
+            const option = document.createElement('option');
+            option.value = currentGateway;
+            option.textContent = `Custom: ${new URL(currentGateway).hostname}`;
+            // Insert before the "Custom Gateway" option
+            gatewaySelect.insertBefore(option, gatewaySelect.lastElementChild);
+          }
+          gatewaySelect.value = currentGateway;
+        }
+      } catch (error) {
+        console.error('Failed to load gateway config:', error);
+      }
+      
       settingsModal.style.display = 'block';
     }
   }
@@ -363,6 +395,71 @@ class PopupManager {
   private handleThemeChange(theme: Theme): void {
     themeManager.setTheme(theme);
     this.updateThemeToggleIcon();
+  }
+
+  private async handleGatewayChange(gateway: string): Promise<void> {
+    const customGatewayRow = document.getElementById('customGatewayRow');
+    
+    if (gateway === 'custom') {
+      customGatewayRow!.style.display = 'block';
+      return;
+    } else {
+      customGatewayRow!.style.display = 'none';
+    }
+
+    try {
+      await storage.updateGatewayConfig({ defaultGateway: gateway });
+      this.showTemporaryMessage('Gateway updated successfully!', 'success');
+    } catch (error) {
+      console.error('Failed to update gateway:', error);
+      this.showTemporaryMessage('Failed to update gateway', 'error');
+    }
+  }
+
+  private async handleSaveCustomGateway(): Promise<void> {
+    const customGatewayInput = document.getElementById('customGatewayInput') as HTMLInputElement;
+    const gatewaySelect = document.getElementById('gatewaySelect') as HTMLSelectElement;
+    const customGateway = customGatewayInput.value.trim();
+
+    if (!customGateway) {
+      this.showTemporaryMessage('Please enter a custom gateway URL', 'error');
+      return;
+    }
+
+    // Validate URL format
+    try {
+      new URL(customGateway);
+      if (!customGateway.endsWith('/ipfs/')) {
+        this.showTemporaryMessage('Custom gateway URL should end with "/ipfs/"', 'error');
+        return;
+      }
+    } catch {
+      this.showTemporaryMessage('Please enter a valid URL', 'error');
+      return;
+    }
+
+    try {
+      await storage.updateGatewayConfig({ defaultGateway: customGateway });
+      
+      // Add custom gateway to the select options if not already there
+      const existingOption = Array.from(gatewaySelect.options).find(opt => opt.value === customGateway);
+      if (!existingOption) {
+        const option = document.createElement('option');
+        option.value = customGateway;
+        option.textContent = `Custom: ${new URL(customGateway).hostname}`;
+        // Insert before the "Custom Gateway" option
+        gatewaySelect.insertBefore(option, gatewaySelect.lastElementChild);
+      }
+      
+      gatewaySelect.value = customGateway;
+      document.getElementById('customGatewayRow')!.style.display = 'none';
+      customGatewayInput.value = '';
+      
+      this.showTemporaryMessage('Custom gateway saved successfully!', 'success');
+    } catch (error) {
+      console.error('Failed to save custom gateway:', error);
+      this.showTemporaryMessage('Failed to save custom gateway', 'error');
+    }
   }
 
   private async handleExport(): Promise<void> {

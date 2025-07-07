@@ -24,7 +24,8 @@ export class ExportManager {
             acc[app.id] = app;
             return acc;
           }, {} as Record<string, any>),
-          settings
+          settings,
+          gatewayConfig: await storage.getGatewayConfig()
         }
       };
 
@@ -133,16 +134,22 @@ export class ExportManager {
 
       for (const app of importedApps) {
         if (!currentAppsMap[app.id]) {
-          // Convert date strings back to Date objects
-          app.createdAt = new Date(app.createdAt);
-          app.lastUsed = new Date(app.lastUsed);
+          // Ensure timestamps are numbers (backward compatibility)
+          if (typeof app.createdAt === 'string') {
+            app.createdAt = new Date(app.createdAt).getTime();
+          }
+          if (typeof app.lastUsed === 'string') {
+            app.lastUsed = new Date(app.lastUsed).getTime();
+          }
           app.versions.forEach(version => {
-            version.createdAt = new Date(version.createdAt);
+            if (typeof version.createdAt === 'string') {
+              version.createdAt = new Date(version.createdAt).getTime();
+            }
           });
 
           await storage.createApp({
             petname: app.petname,
-            url: app.versions.find(v => v.isDefault)?.url || app.versions[0]?.url || '',
+            cid: app.versions.find(v => v.isDefault)?.cid || app.versions[0]?.cid || '',
             description: app.description,
             tags: app.tags,
             versionName: app.versions.find(v => v.isDefault)?.name || app.versions[0]?.name
@@ -154,7 +161,6 @@ export class ExportManager {
             await storage.createVersion({
               appId: app.id,
               name: version.name,
-              url: version.url,
               cid: version.cid,
               hash: version.hash,
               makeDefault: false
