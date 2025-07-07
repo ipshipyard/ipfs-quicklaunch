@@ -49,11 +49,8 @@ export class StorageManager {
         defaultVersionBehavior: 'launch'
       },
       gatewayConfig: {
-        defaultGateway: 'https://ipfs.io/ipfs/',
+        defaultGateway: 'https://inbrowser.link/ipfs/',
         customGateways: [
-          'https://ipfs.io/ipfs/',
-          'https://gateway.ipfs.io/ipfs/',
-          'https://cloudflare-ipfs.com/ipfs/',
           'https://dweb.link/ipfs/'
         ]
       }
