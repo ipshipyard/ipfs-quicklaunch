@@ -262,7 +262,7 @@
             border: 1px solid var(--border-primary);
             border-radius: 8px;
             box-shadow: 0 4px 20px var(--shadow-light);
-            z-index: 1000;
+            z-index: 10001;
             min-width: 180px;
             padding: 4px 0;
         }
@@ -627,6 +627,38 @@
         .about-info > div {
             margin-bottom: 4px;
         }
+        
+        /* Custom Tooltip Styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip-text {
+            visibility: hidden;
+            width: 180px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: fixed;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border: 1px solid var(--border-primary);
+            box-shadow: 0 4px 8px var(--shadow-light);
+            font-size: 12px;
+            line-height: 1.3;
+            word-wrap: break-word;
+            max-width: 180px;
+            pointer-events: none;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -675,6 +707,30 @@
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" id="cancelButton">Cancel</button>
                     <button type="submit" class="btn btn-primary">Add App</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit App Modal -->
+    <div class="modal" id="editAppModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Edit App</div>
+                <button class="close-button" id="closeEditModal">&times;</button>
+            </div>
+            <form id="editAppForm">
+                <div class="form-group">
+                    <label class="form-label" for="editPetname">App Name (Petname)</label>
+                    <input type="text" class="form-input" id="editPetname" name="petname" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editDescription">Description (Optional)</label>
+                    <input type="text" class="form-input" id="editDescription" name="description">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelEditButton">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
         </div>

@@ -204,8 +204,34 @@ export class AppFlag {
     document.body.appendChild(menu);
     
     const rect = (event.target as HTMLElement).getBoundingClientRect();
-    menu.style.left = `${rect.left}px`;
-    menu.style.top = `${rect.bottom + 5}px`;
+    const menuRect = menu.getBoundingClientRect();
+    
+    // Calculate initial position below the button
+    let left = rect.left;
+    let top = rect.bottom + 5;
+    
+    // Check if menu extends beyond right edge of viewport
+    if (left + menuRect.width > window.innerWidth) {
+      left = rect.right - menuRect.width; // Align to right edge of button
+    }
+    
+    // Check if menu extends beyond bottom edge of viewport
+    if (top + menuRect.height > window.innerHeight) {
+      top = rect.top - menuRect.height - 5; // Show above button instead
+    }
+    
+    // Ensure menu doesn't go off left edge
+    if (left < 0) {
+      left = 5;
+    }
+    
+    // Ensure menu doesn't go off top edge
+    if (top < 0) {
+      top = 5;
+    }
+    
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
     
     // Close menu when clicking outside
     const closeHandler = (e: Event) => {

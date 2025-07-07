@@ -10,6 +10,7 @@ class PopupManager {
   private filteredApps: App[] = [];
   private appFlags: Map<string, AppFlag> = new Map();
   private formCleanupFunctions: Map<string, () => void> = new Map();
+  private currentEditApp: App | null = null;
 
   constructor() {
     this.init();
@@ -20,6 +21,7 @@ class PopupManager {
     await this.loadApps();
     this.setupEventListeners();
     this.initializeTheme();
+    this.setupTooltips();
     this.render();
   }
 
@@ -42,6 +44,10 @@ class PopupManager {
     const exportButton = document.getElementById('exportButton');
     const importButton = document.getElementById('importButton');
     const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
+    const editAppModal = document.getElementById('editAppModal');
+    const closeEditModal = document.getElementById('closeEditModal');
+    const cancelEditButton = document.getElementById('cancelEditButton');
+    const editAppForm = document.getElementById('editAppForm') as HTMLFormElement;
 
     addButton?.addEventListener('click', () => this.showAddModal());
     searchBox?.addEventListener('input', (e) => this.handleSearch((e.target as HTMLInputElement).value));
@@ -54,6 +60,9 @@ class PopupManager {
     exportButton?.addEventListener('click', () => this.handleExport());
     importButton?.addEventListener('click', () => this.handleImport());
     themeSelect?.addEventListener('change', (e) => this.handleThemeChange((e.target as HTMLSelectElement).value as Theme));
+    closeEditModal?.addEventListener('click', () => this.hideEditModal());
+    cancelEditButton?.addEventListener('click', () => this.hideEditModal());
+    editAppForm?.addEventListener('submit', (e) => this.handleEditApp(e));
 
     // Close modal when clicking outside
     addAppModal?.addEventListener('click', (e) => {
@@ -65,6 +74,12 @@ class PopupManager {
     settingsModal?.addEventListener('click', (e) => {
       if (e.target === settingsModal) {
         this.hideSettingsModal();
+      }
+    });
+
+    editAppModal?.addEventListener('click', (e) => {
+      if (e.target === editAppModal) {
+        this.hideEditModal();
       }
     });
 
@@ -176,8 +191,8 @@ class PopupManager {
   }
 
   private async handleAppEdit(app: App) {
-    // TODO: Show edit app modal
-    console.log('Edit app:', app.petname);
+    this.currentEditApp = app;
+    await this.showEditModal();
   }
 
   private async handleAppDelete(app: App) {
@@ -266,6 +281,83 @@ class PopupManager {
     const settingsModal = document.getElementById('settingsModal');
     if (settingsModal) {
       settingsModal.style.display = 'none';
+    }
+  }
+
+  private async showEditModal(): Promise<void> {
+    if (!this.currentEditApp) return;
+    
+    const modal = document.getElementById('editAppModal');
+    const form = document.getElementById('editAppForm') as HTMLFormElement;
+    
+    if (modal && form) {
+      modal.style.display = 'block';
+      
+      // Populate form with current app data
+      const petnameInput = document.getElementById('editPetname') as HTMLInputElement;
+      const descriptionInput = document.getElementById('editDescription') as HTMLInputElement;
+      
+      if (petnameInput) petnameInput.value = this.currentEditApp.petname;
+      if (descriptionInput) descriptionInput.value = this.currentEditApp.description || '';
+      
+      // Set up auto-save for this form
+      this.setupFormAutoSave('editAppForm', form);
+      
+      petnameInput?.focus();
+    }
+  }
+
+  private hideEditModal(): void {
+    const modal = document.getElementById('editAppModal');
+    if (modal) {
+      modal.style.display = 'none';
+      this.cleanupFormAutoSave('editAppForm');
+      this.currentEditApp = null;
+    }
+  }
+
+  private async handleEditApp(e: Event): Promise<void> {
+    e.preventDefault();
+    
+    if (!this.currentEditApp) return;
+    
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    
+    const petname = formData.get('petname') as string;
+    const description = formData.get('description') as string;
+
+    if (!petname) {
+      alert('Please fill in the app name');
+      return;
+    }
+
+    try {
+      const updatedApp = await storage.updateApp({
+        id: this.currentEditApp.id,
+        petname,
+        description: description || undefined
+      });
+
+      if (updatedApp) {
+        // Update the app in our local arrays
+        const appIndex = this.apps.findIndex(app => app.id === updatedApp.id);
+        if (appIndex !== -1) {
+          this.apps[appIndex] = updatedApp;
+          this.filteredApps = [...this.apps];
+        }
+        
+        this.render();
+        
+        // Clear form state on successful submission
+        await formStateManager.clearFormState('editAppForm');
+        this.hideEditModal();
+        
+        this.showTemporaryMessage('App updated successfully!', 'success');
+      }
+    } catch (error) {
+      console.error('Failed to update app:', error);
+      alert('Failed to update app. Please try again.');
     }
   }
 
@@ -368,6 +460,11 @@ class PopupManager {
         this.hideAddModal();
       } else if (settingsModal?.style.display === 'block') {
         this.hideSettingsModal();
+      } else {
+        const editModal = document.getElementById('editAppModal');
+        if (editModal?.style.display === 'block') {
+          this.hideEditModal();
+        }
       }
       return;
     }
@@ -479,6 +576,137 @@ class PopupManager {
         }
       }, 300);
     }, 1500);
+  }
+
+  private setupTooltips(): void {
+    // Use event delegation to handle tooltips for dynamically created elements
+    document.addEventListener('mouseover', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.hasAttribute('title')) {
+        this.showTooltip(target);
+      }
+    });
+
+    document.addEventListener('mouseout', (e) => {
+      const target = e.target as HTMLElement;
+      // Check for elements that have active tooltips (title was moved to data-original-title)
+      if (target.hasAttribute('title') || target.hasAttribute('data-original-title')) {
+        this.hideTooltip(target);
+      }
+    });
+
+    // Fallback: Global mouseleave cleanup for any orphaned tooltips
+    document.addEventListener('mouseleave', () => {
+      this.cleanupAllTooltips();
+    });
+  }
+
+  private showTooltip(element: HTMLElement): void {
+    const title = element.getAttribute('title');
+    if (!title) return;
+
+    // Check if tooltip already exists for this element
+    const existingTooltipId = element.getAttribute('data-tooltip-id');
+    if (existingTooltipId) {
+      const existingTooltip = document.querySelector(`[data-tooltip-for="${existingTooltipId}"]`);
+      if (existingTooltip) {
+        return; // Tooltip already exists, don't create another
+      }
+    }
+
+    // Remove the title attribute to prevent default tooltip
+    element.removeAttribute('title');
+    element.setAttribute('data-original-title', title);
+
+    // Create tooltip element
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip-text';
+    tooltip.textContent = title;
+    tooltip.style.visibility = 'visible';
+    tooltip.style.opacity = '1';
+
+    document.body.appendChild(tooltip);
+
+    // Position tooltip
+    const rect = element.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    
+    // Position above the element by default
+    let top = rect.top - tooltipRect.height - 8;
+    let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+    
+    // Adjust if tooltip goes outside viewport
+    if (left < 8) {
+      left = 8;
+    } else if (left + tooltipRect.width > window.innerWidth - 8) {
+      left = window.innerWidth - tooltipRect.width - 8;
+    }
+    
+    // If tooltip goes above viewport, position below
+    if (top < 8) {
+      top = rect.bottom + 8;
+    }
+
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+
+    // Store reference for cleanup
+    const tooltipId = Date.now().toString();
+    element.setAttribute('data-tooltip-id', tooltipId);
+    tooltip.setAttribute('data-tooltip-for', tooltipId);
+  }
+
+  private hideTooltip(element: HTMLElement): void {
+    // Restore original title
+    const originalTitle = element.getAttribute('data-original-title');
+    if (originalTitle) {
+      element.setAttribute('title', originalTitle);
+      element.removeAttribute('data-original-title');
+    }
+
+    // Remove tooltip element
+    const tooltipId = element.getAttribute('data-tooltip-id');
+    if (tooltipId) {
+      const tooltip = document.querySelector(`[data-tooltip-for="${tooltipId}"]`);
+      if (tooltip) {
+        tooltip.remove();
+      }
+      element.removeAttribute('data-tooltip-id');
+    }
+
+    // Clean up any orphaned tooltips (fallback safety measure)
+    this.cleanupOrphanedTooltips();
+  }
+
+  private cleanupOrphanedTooltips(): void {
+    const tooltips = document.querySelectorAll('.tooltip-text');
+    tooltips.forEach(tooltip => {
+      const tooltipFor = tooltip.getAttribute('data-tooltip-for');
+      if (tooltipFor) {
+        const associatedElement = document.querySelector(`[data-tooltip-id="${tooltipFor}"]`);
+        if (!associatedElement) {
+          // Tooltip has no associated element, remove it
+          tooltip.remove();
+        }
+      }
+    });
+  }
+
+  private cleanupAllTooltips(): void {
+    // Remove all active tooltips
+    const tooltips = document.querySelectorAll('.tooltip-text');
+    tooltips.forEach(tooltip => tooltip.remove());
+    
+    // Restore title attributes for all elements with data-original-title
+    const elementsWithOriginalTitle = document.querySelectorAll('[data-original-title]');
+    elementsWithOriginalTitle.forEach(element => {
+      const originalTitle = element.getAttribute('data-original-title');
+      if (originalTitle) {
+        element.setAttribute('title', originalTitle);
+        element.removeAttribute('data-original-title');
+        element.removeAttribute('data-tooltip-id');
+      }
+    });
   }
 }
 
