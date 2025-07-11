@@ -1,4 +1,5 @@
 import { App, AppStorage, CreateAppRequest, CreateVersionRequest, UpdateAppRequest, UserSettings, GatewayConfig } from '../types/index.js';
+import { LocalGatewayProbe } from '../utils/localGateway.js';
 
 const STORAGE_KEY = 'app_launcher_data';
 
@@ -49,10 +50,14 @@ export class StorageManager {
         defaultVersionBehavior: 'launch'
       },
       gatewayConfig: {
-        defaultGateway: 'https://inbrowser.link/ipfs/',
+        defaultGateway: 'inbrowser.link',
         customGateways: [
-          'https://dweb.link/ipfs/'
-        ]
+          'dweb.link',
+          'inbrowser.link',
+          'inbrowser.dev'
+        ],
+        preferLocalGateway: false,
+        localGatewayUrl: 'http://localhost:8080'
       }
     };
   }
@@ -187,7 +192,27 @@ export class StorageManager {
 
   async buildUrl(cid: string): Promise<string> {
     const gatewayConfig = await this.getGatewayConfig();
-    return `${gatewayConfig.defaultGateway}${cid}`;
+    
+    // Check if local gateway should be preferred and is available
+    if (gatewayConfig.preferLocalGateway) {
+      const localGatewayResult = await LocalGatewayProbe.probe();
+      if (localGatewayResult.isAvailable) {
+        return LocalGatewayProbe.buildLocalUrl(cid);
+      }
+    }
+    
+    const gateway = gatewayConfig.defaultGateway;
+    
+    // Check if it's a legacy path-based gateway format
+    if (gateway.includes('/ipfs/')) {
+      // Legacy format: https://gateway.com/ipfs/
+      return `${gateway}${cid}`;
+    }
+    
+    // Modern subdomain format: https://cid.ipfs.gateway.com
+    const baseGateway = gateway.startsWith('http') ? gateway : `https://${gateway}`;
+    const gatewayHost = new URL(baseGateway).hostname;
+    return `https://${cid}.ipfs.${gatewayHost}`;
   }
 
   private generateId(): string {

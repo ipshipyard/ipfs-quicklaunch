@@ -27,6 +27,8 @@ export interface AppStorage {
 export interface GatewayConfig {
   defaultGateway: string;
   customGateways: string[];
+  preferLocalGateway: boolean;
+  localGatewayUrl: string;
 }
 
 export interface UserSettings {
