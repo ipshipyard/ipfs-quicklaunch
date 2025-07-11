@@ -401,7 +401,7 @@
         }
         
         .modal-content.large .modal-header {
-            padding: 0 20px;
+            padding: 0 12px 0 12px;
         }
         
         .modal-body {
@@ -412,7 +412,7 @@
         }
         
         .modal-content.large .modal-body {
-            padding: 0 20px 20px 0; /* More padding for large modals */
+            padding: 0 12px 20px 12px; /* Smaller, equal padding on both sides for large modals */
         }
         
         .modal-title {
@@ -605,6 +605,15 @@
         
         .form-row .form-group {
             flex: 1;
+        }
+        
+        .form-row.vertical {
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .form-row.vertical .form-group {
+            flex: none;
         }
         
         .form-help {

@@ -30,7 +30,7 @@ export class VersionManager {
           <div class="add-version-section">
             <h4>Add New Version</h4>
             <form id="addVersionForm">
-              <div class="form-row">
+              <div class="form-row vertical">
                 <div class="form-group">
                   <label class="form-label" for="versionName">Version Name</label>
                   <input type="text" class="form-input" id="versionName" name="versionName" required placeholder="e.g., v1.2.0, Production">
