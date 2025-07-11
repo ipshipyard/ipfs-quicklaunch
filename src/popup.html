@@ -376,6 +376,19 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            border-radius: 0;
+            margin: 0 auto;
+            margin-top: 5vh;
+        }
+        
+        @media (max-width: 500px) {
+            .modal-content.large {
+                width: 100%;
+                height: 100vh;
+                max-height: 100vh;
+                margin: 0;
+                border-radius: 0;
+            }
         }
         
         .modal-header {
@@ -384,14 +397,18 @@
             align-items: center;
             margin-bottom: 20px;
             flex-shrink: 0;
+            padding: 0 4px;
         }
         
         .modal-body {
             flex: 1;
             overflow-y: auto;
-            padding-right: 4px; /* Space for scrollbar */
+            padding: 0 4px 20px 0; /* Space for scrollbar and bottom margin */
             min-height: 0; /* Allow flexbox shrinking */
-            padding-bottom: 20px; /* Extra space at bottom */
+        }
+        
+        .modal-content.large .modal-body {
+            padding: 0 8px 20px 0; /* More padding for large modals */
         }
         
         .modal-title {
@@ -405,8 +422,20 @@
             border: none;
             font-size: 20px;
             cursor: pointer;
-            padding: 0;
+            padding: 8px;
             color: var(--text-secondary);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            min-height: 32px;
+            transition: background-color 0.2s;
+        }
+        
+        .close-button:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
         }
         
         .form-group {
@@ -499,14 +528,16 @@
         .version-info {
             flex: 1;
             min-width: 0;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         
         .version-name {
             font-weight: 600;
             font-size: 14px;
             color: var(--text-primary);
-            margin-bottom: 4px;
+            margin: 0;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -523,18 +554,16 @@
             flex-shrink: 0;
         }
         
-        .version-url {
-            font-size: 12px;
-            color: var(--text-secondary);
-            word-break: break-all;
-            margin-bottom: 4px;
-        }
-        
         .version-cid {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-tertiary);
             font-family: 'Monaco', 'Menlo', monospace;
-            margin-bottom: 4px;
+            word-break: break-all;
+            margin: 0;
+            background: var(--bg-tertiary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-secondary);
         }
         
         .version-meta {
@@ -543,6 +572,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            margin: 0;
         }
         
         .version-actions {
