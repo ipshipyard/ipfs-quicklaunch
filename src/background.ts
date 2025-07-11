@@ -1,4 +1,5 @@
 import { storage } from './storage/index.js';
+import { DNSLinkProbe } from './utils/dnslink.js';
 
 class BackgroundManager {
   constructor() {
@@ -74,6 +75,29 @@ class BackgroundManager {
         case 'UPDATE_SETTINGS':
           const updatedSettings = await storage.updateSettings(request.data);
           sendResponse({ success: true, data: updatedSettings });
+          break;
+        
+        case 'CHECK_DNSLINK':
+          try {
+            const result = await DNSLinkProbe.probe(request.data.domain);
+            sendResponse({ success: true, data: result });
+          } catch (error) {
+            sendResponse({ success: false, error: error instanceof Error ? error.message : 'DNSLink check failed' });
+          }
+          break;
+        
+        case 'GET_CURRENT_TAB':
+          try {
+            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (tabs[0]?.url) {
+              const url = new URL(tabs[0].url);
+              sendResponse({ success: true, data: { domain: url.hostname, url: tabs[0].url } });
+            } else {
+              sendResponse({ success: false, error: 'No active tab found' });
+            }
+          } catch (error) {
+            sendResponse({ success: false, error: error instanceof Error ? error.message : 'Failed to get current tab' });
+          }
           break;
         
         default:

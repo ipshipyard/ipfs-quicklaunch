@@ -4,6 +4,7 @@ import { AppFlag } from './components/AppFlag.js';
 import { themeManager, Theme } from './utils/theme.js';
 import { ExportManager } from './utils/export.js';
 import { formStateManager } from './utils/formState.js';
+import { DNSLinkResult } from './utils/dnslink.js';
 
 class PopupManager {
   private apps: App[] = [];
@@ -11,6 +12,7 @@ class PopupManager {
   private appFlags: Map<string, AppFlag> = new Map();
   private formCleanupFunctions: Map<string, () => void> = new Map();
   private currentEditApp: App | null = null;
+  private currentDNSLinkResult: DNSLinkResult | null = null;
 
   constructor() {
     this.init();
@@ -22,6 +24,7 @@ class PopupManager {
     this.setupEventListeners();
     this.initializeTheme();
     this.render();
+    await this.checkCurrentTabForDNSLink();
   }
 
   private async loadApps() {
@@ -657,6 +660,168 @@ class PopupManager {
       cleanup();
       this.formCleanupFunctions.delete(formId);
     }
+  }
+
+  /**
+   * Check current tab for DNSLink
+   */
+  private async checkCurrentTabForDNSLink(): Promise<void> {
+    try {
+      // Get current tab info from background script
+      const tabResponse = await this.sendMessageToBackground('GET_CURRENT_TAB', {});
+      if (!tabResponse.success || !tabResponse.data?.domain) {
+        return;
+      }
+
+      const { domain } = tabResponse.data;
+      
+      // Skip non-web URLs
+      if (domain.startsWith('chrome://') || domain.startsWith('moz-extension://') || domain.startsWith('chrome-extension://')) {
+        return;
+      }
+
+      // Check for DNSLink
+      const dnslinkResponse = await this.sendMessageToBackground('CHECK_DNSLINK', { domain });
+      if (dnslinkResponse.success && dnslinkResponse.data) {
+        this.currentDNSLinkResult = dnslinkResponse.data;
+        if (this.currentDNSLinkResult?.hasDNSLink) {
+          this.showDNSLinkNotification();
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check DNSLink:', error);
+    }
+  }
+
+  /**
+   * Send message to background script
+   */
+  private async sendMessageToBackground(type: string, data: any): Promise<any> {
+    return new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type, data }, (response) => {
+        resolve(response || { success: false, error: 'No response' });
+      });
+    });
+  }
+
+  /**
+   * Show DNSLink detection notification
+   */
+  private showDNSLinkNotification(): void {
+    if (!this.currentDNSLinkResult?.hasDNSLink) return;
+
+    const notification = document.createElement('div');
+    notification.className = 'dnslink-notification';
+    notification.innerHTML = `
+      <div class="dnslink-content">
+        <div class="dnslink-icon">🔗</div>
+        <div class="dnslink-text">
+          <strong>DNSLink detected!</strong><br>
+          ${this.currentDNSLinkResult.domain} has IPFS content
+        </div>
+        <button class="dnslink-add-btn" id="addDNSLinkApp">Add App</button>
+        <button class="dnslink-close-btn" id="closeDNSLinkNotification">×</button>
+      </div>
+    `;
+    notification.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--accent-primary);
+      color: white;
+      padding: 12px 16px;
+      z-index: 10002;
+      box-shadow: 0 2px 8px var(--shadow-light);
+    `;
+
+    const content = notification.querySelector('.dnslink-content') as HTMLElement;
+    content.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 400px;
+      margin: 0 auto;
+    `;
+
+    const icon = notification.querySelector('.dnslink-icon') as HTMLElement;
+    icon.style.cssText = `
+      font-size: 20px;
+      flex-shrink: 0;
+    `;
+
+    const text = notification.querySelector('.dnslink-text') as HTMLElement;
+    text.style.cssText = `
+      flex: 1;
+      font-size: 13px;
+      line-height: 1.3;
+    `;
+
+    const addBtn = notification.querySelector('.dnslink-add-btn') as HTMLElement;
+    addBtn.style.cssText = `
+      background: white;
+      color: var(--accent-primary);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+    `;
+
+    const closeBtn = notification.querySelector('.dnslink-close-btn') as HTMLElement;
+    closeBtn.style.cssText = `
+      background: none;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    `;
+
+    document.body.insertBefore(notification, document.body.firstChild);
+
+    // Add event listeners
+    addBtn.addEventListener('click', () => {
+      this.handleAddDNSLinkApp();
+      document.body.removeChild(notification);
+    });
+
+    closeBtn.addEventListener('click', () => {
+      document.body.removeChild(notification);
+    });
+
+    // Auto-hide after 10 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 10000);
+  }
+
+  /**
+   * Handle adding DNSLink app
+   */
+  private async handleAddDNSLinkApp(): Promise<void> {
+    if (!this.currentDNSLinkResult?.hasDNSLink) return;
+
+    await this.showAddModal();
+    
+    // Pre-fill the form with DNSLink data
+    const petnameInput = document.getElementById('petname') as HTMLInputElement;
+    const cidInput = document.getElementById('cid') as HTMLInputElement;
+    const descriptionInput = document.getElementById('description') as HTMLInputElement;
+
+    if (petnameInput) petnameInput.value = this.currentDNSLinkResult.domain;
+    if (cidInput && this.currentDNSLinkResult.cid) cidInput.value = this.currentDNSLinkResult.cid;
+    if (descriptionInput) descriptionInput.value = `IPFS site for ${this.currentDNSLinkResult.domain}`;
   }
 
   /**
