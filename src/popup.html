@@ -782,22 +782,29 @@
                         <label class="settings-label">
                             Default Gateway:
                             <select class="settings-select" id="gatewaySelect">
-                                <option value="https://dweb.link/ipfs/">dweb.link</option>
-                                <option value="https://inbrowser.link/ipfs/">inbrowser.link</option>
-                                <option value="https://inbrowser.dev/ipfs/">inbrowser.dev</option>
+                                <option value="dweb.link">dweb.link</option>
+                                <option value="inbrowser.link">inbrowser.link</option>
+                                <option value="inbrowser.dev">inbrowser.dev</option>
                                 <option value="custom">Custom Gateway</option>
                             </select>
                         </label>
                     </div>
                     <div class="settings-row" id="customGatewayRow" style="display: none;">
                         <label class="settings-label">
-                            Custom Gateway URL:
-                            <input type="url" class="form-input" id="customGatewayInput" placeholder="https://your-gateway.com/ipfs/">
+                            Custom Gateway Domain:
+                            <input type="text" class="form-input" id="customGatewayInput" placeholder="your-gateway.com">
                         </label>
                         <button type="button" class="btn btn-secondary" id="saveCustomGateway">Save</button>
                     </div>
+                    <div class="settings-row">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="preferLocalGateway">
+                            Prefer local IPFS gateway (localhost:8080)
+                        </label>
+                    </div>
                     <div class="settings-help">
-                        Choose which IPFS gateway to use for launching apps from CIDs. Custom gateway URL should end with "/ipfs/".
+                        Choose which IPFS gateway to use for launching apps from CIDs. URLs will be constructed as https://cid.ipfs.gateway.com<br>
+                        When enabled, the extension will try to use your local IPFS gateway first if available.
                     </div>
                 </div>
                 

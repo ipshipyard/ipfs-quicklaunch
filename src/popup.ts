@@ -49,6 +49,7 @@ class PopupManager {
     const closeEditModal = document.getElementById('closeEditModal');
     const cancelEditButton = document.getElementById('cancelEditButton');
     const editAppForm = document.getElementById('editAppForm') as HTMLFormElement;
+    const preferLocalGateway = document.getElementById('preferLocalGateway') as HTMLInputElement;
 
     addButton?.addEventListener('click', () => this.showAddModal());
     searchBox?.addEventListener('input', (e) => this.handleSearch((e.target as HTMLInputElement).value));
@@ -66,6 +67,7 @@ class PopupManager {
     closeEditModal?.addEventListener('click', () => this.hideEditModal());
     cancelEditButton?.addEventListener('click', () => this.hideEditModal());
     editAppForm?.addEventListener('submit', (e) => this.handleEditApp(e));
+    preferLocalGateway?.addEventListener('change', (e) => this.handleLocalGatewayToggle((e.target as HTMLInputElement).checked));
 
     // Close modal when clicking outside
     addAppModal?.addEventListener('click', (e) => {
@@ -273,8 +275,9 @@ class PopupManager {
     const settingsModal = document.getElementById('settingsModal');
     const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
     const gatewaySelect = document.getElementById('gatewaySelect') as HTMLSelectElement;
+    const preferLocalGateway = document.getElementById('preferLocalGateway') as HTMLInputElement;
     
-    if (settingsModal && themeSelect && gatewaySelect) {
+    if (settingsModal && themeSelect && gatewaySelect && preferLocalGateway) {
       // Update theme select to current value
       themeSelect.value = themeManager.getTheme();
       
@@ -283,8 +286,11 @@ class PopupManager {
         const gatewayConfig = await storage.getGatewayConfig();
         const currentGateway = gatewayConfig.defaultGateway;
         
+        // Update local gateway preference
+        preferLocalGateway.checked = gatewayConfig.preferLocalGateway || false;
+        
         // Check if current gateway is in the predefined options
-        const predefinedOptions = ['https://ipfs.io/ipfs/', 'https://gateway.ipfs.io/ipfs/', 'https://cloudflare-ipfs.com/ipfs/', 'https://dweb.link/ipfs/'];
+        const predefinedOptions = ['dweb.link', 'inbrowser.link', 'inbrowser.dev'];
         
         if (predefinedOptions.includes(currentGateway)) {
           gatewaySelect.value = currentGateway;
@@ -294,7 +300,7 @@ class PopupManager {
           if (!existingOption) {
             const option = document.createElement('option');
             option.value = currentGateway;
-            option.textContent = `Custom: ${new URL(currentGateway).hostname}`;
+            option.textContent = `Custom: ${currentGateway}`;
             // Insert before the "Custom Gateway" option
             gatewaySelect.insertBefore(option, gatewaySelect.lastElementChild);
           }
@@ -422,43 +428,60 @@ class PopupManager {
     const customGateway = customGatewayInput.value.trim();
 
     if (!customGateway) {
-      this.showTemporaryMessage('Please enter a custom gateway URL', 'error');
+      this.showTemporaryMessage('Please enter a custom gateway domain', 'error');
       return;
     }
 
-    // Validate URL format
+    // Validate domain format
     try {
-      new URL(customGateway);
-      if (!customGateway.endsWith('/ipfs/')) {
-        this.showTemporaryMessage('Custom gateway URL should end with "/ipfs/"', 'error');
+      // Remove protocol if present
+      const cleanDomain = customGateway.replace(/^https?:\/\//, '');
+      
+      // Basic domain validation
+      if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleanDomain)) {
+        this.showTemporaryMessage('Please enter a valid domain name (e.g., gateway.com)', 'error');
         return;
       }
-    } catch {
-      this.showTemporaryMessage('Please enter a valid URL', 'error');
-      return;
-    }
-
-    try {
-      await storage.updateGatewayConfig({ defaultGateway: customGateway });
+      
+      // Test if it's a valid hostname by creating a URL with it
+      new URL(`https://${cleanDomain}`);
+      
+      // Use clean domain (without protocol)
+      const finalDomain = cleanDomain;
+      
+      await storage.updateGatewayConfig({ defaultGateway: finalDomain });
       
       // Add custom gateway to the select options if not already there
-      const existingOption = Array.from(gatewaySelect.options).find(opt => opt.value === customGateway);
+      const existingOption = Array.from(gatewaySelect.options).find(opt => opt.value === finalDomain);
       if (!existingOption) {
         const option = document.createElement('option');
-        option.value = customGateway;
-        option.textContent = `Custom: ${new URL(customGateway).hostname}`;
+        option.value = finalDomain;
+        option.textContent = `Custom: ${finalDomain}`;
         // Insert before the "Custom Gateway" option
         gatewaySelect.insertBefore(option, gatewaySelect.lastElementChild);
       }
       
-      gatewaySelect.value = customGateway;
+      gatewaySelect.value = finalDomain;
       document.getElementById('customGatewayRow')!.style.display = 'none';
       customGatewayInput.value = '';
       
       this.showTemporaryMessage('Custom gateway saved successfully!', 'success');
     } catch (error) {
       console.error('Failed to save custom gateway:', error);
-      this.showTemporaryMessage('Failed to save custom gateway', 'error');
+      this.showTemporaryMessage('Please enter a valid domain name', 'error');
+    }
+  }
+
+  private async handleLocalGatewayToggle(enabled: boolean): Promise<void> {
+    try {
+      await storage.updateGatewayConfig({ preferLocalGateway: enabled });
+      this.showTemporaryMessage(
+        enabled ? 'Local gateway preference enabled' : 'Local gateway preference disabled',
+        'success'
+      );
+    } catch (error) {
+      console.error('Failed to update local gateway preference:', error);
+      this.showTemporaryMessage('Failed to update preference', 'error');
     }
   }
 
