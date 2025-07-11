@@ -1,69 +1,5 @@
-# Browser Extension Plan: IPFS App Launcher with Petnames
+  ### Component Structure
 
-## Overview
-A browser extension that serves as an IPFS app launcher with petname support, featuring an elegant modern flag UI for bookmarking apps with custom names and URLs, including support for multiple versions per app.
-
-## Core Features & Requirements
-
-### Primary Features
-- **App Bookmarking**: Save apps with custom petnames and URLs
-- **Version Management**: Multiple versions per app with unique URLs and hashes
-- **Modern Flag UI**: Clean, elegant interface with visual app representations
-- **Local Storage**: All data stored locally for privacy and speed
-- **Quick Launch**: One-click app launching from browser
-
-### User Experience
-- Intuitive bookmark creation and editing
-- Visual app icons/flags for easy recognition
-- Search and filtering capabilities
-- Drag-and-drop organization
-- Keyboard shortcuts for power users
-
-## Technical Architecture & Data Model
-
-### Extension Structure
-- **Manifest V3** compatibility
-- **Popup UI** as primary interface
-- **Background Service Worker** for data management
-- **Content Scripts** for webpage integration (if needed)
-
-### Data Model
-```typescript
-interface App {
-  id: string;
-  petname: string;
-  description?: string;
-  icon?: string;
-  versions: AppVersion[];
-  tags: string[];
-  createdAt: Date;
-  lastUsed: Date;
-}
-
-interface AppVersion {
-  id: string;
-  name: string;
-  url: string;
-  hash?: string;
-  isDefault: boolean;
-  createdAt: Date;
-}
-```
-
-### Storage Strategy
-- Chrome Storage API for persistence
-- Local caching for performance
-- Export/import functionality for backup
-
-## UI/UX Design & Components
-
-### Visual Design
-- **Modern Flag Theme**: Each app represented as a stylized flag
-- **Grid/List Views**: Toggle between visual and compact layouts
-- **Dark/Light Themes**: User preference support
-- **Responsive Design**: Adapt to different popup sizes
-
-### Component Structure
 - `AppGrid`: Main container for app flags
 - `AppFlag`: Individual app representation
 - `AppEditor`: Modal for creating/editing apps
@@ -72,6 +8,7 @@ interface AppVersion {
 - `SettingsPanel`: Configuration options
 
 ### Interaction Patterns
+
 - Click to launch default version
 - Right-click context menu for version selection
 - Hover for quick app info
@@ -79,50 +16,123 @@ interface AppVersion {
 
 ## Implementation Phases
 
-### Phase 1: Core Foundation (Week 1-2)
+### Phase 1: Core Foundation
+
 - Extension manifest and basic structure
 - Data models and storage layer
 - Basic popup UI framework
 - Simple app creation and storage
 
-### Phase 2: Core Features (Week 3-4)
+### Phase 2: Core Features
+
 - App flag UI components
 - Version management system
 - Launch functionality
 - Search and filtering
 
-### Phase 3: Polish & Enhancement (Week 5-6)
+### Phase 3: Polish & Enhancement
+
 - Visual theming and animations
 - Export/import functionality
 - Keyboard shortcuts
 - Settings and preferences
 
-### Phase 4: Advanced Features (Week 7-8)
+### Phase 4: Probing features
+
+- Add [DNSLink](https://dnslink.dev/) probing for sites. If a domain has a DNSLink record, prompt the user to save it.
+- Probe for local IPFS gateway running on port 8080 ( try the `/ipfs/bafkqaaa` path). Add a config checkbox that to override and load from local gateway if it is available.
+
+### Phase 5: UX polish
+- Use the extension button to provide user feedback, for example when a DNSLink is detected, change the icon.
 - Icon extraction from websites
-- Hash verification for versions
-- Usage analytics and recommendations
-- Performance optimizations
 
-## Technical Challenges & Solutions
+### Phase 6: Service worker gateway integration
 
-### Key Challenges
-1. **Cross-Origin Access**: Limited ability to fetch app metadata
-   - *Solution*: Use Chrome extension permissions, fallback to user input
-2. **Storage Limitations**: Chrome storage quotas
-   - *Solution*: Efficient data compression, optional cloud sync
-3. **Version Hash Validation**: Ensuring app integrity
-   - *Solution*: Background worker for periodic hash checks
-4. **Performance**: Fast loading with many bookmarks
-   - *Solution*: Virtual scrolling, lazy loading, indexed search
+- Detect if a user is on the Service Worker GW (for now statically using inbrowser.link or inbrowser.dev or a subdomain of these origins) If it is, allow customizing configuration which is stored in the indexed db of the root domain, e.g. inbrowser.link.
 
-### Technology Stack
-- **Frontend**: React/Vue.js with TypeScript
-- **Styling**: Tailwind CSS or styled-components
-- **Build Tool**: Vite or Webpack
-- **Testing**: Jest + React Testing Library
 
-## Next Steps
-1. Set up development environment
-2. Create initial project structure
-3. Implement Phase 1 features
-4. Iterative development and testing
+## Current Implementation Status
+
+### **Development Phase: Phase 4+ Complete (~90% Project Completion)**
+
+The IPFS App Launcher browser extension is now a fully functional, production-ready application with all core features implemented, polished, and enhanced with advanced probing capabilities.
+
+### **✅ Completed Features**
+
+#### **Core Functionality**
+
+- ✅ App creation, editing, and deletion with petnames
+- ✅ Multiple version management per app with CID/hash tracking
+- ✅ One-click app launching in new tabs
+- ✅ Search and filtering capabilities
+- ✅ Context menus and action buttons
+- ✅ Chrome Storage API integration with data persistence
+- ✅ **CID-based Architecture**: Apps store IPFS CIDs instead of URLs
+- ✅ **Gateway Configuration**: Configurable IPFS gateways with custom support
+- ✅ **Subdomain Resolution**: Modern `https://cid.ipfs.gateway.com` URL construction
+
+#### **Advanced Features**
+
+- ✅ **Theme System**: Light/Dark/Auto modes with system preference detection
+- ✅ **Form State Management**: Auto-save draft functionality with persistence
+- ✅ **Data Export/Import**: JSON backup and restore with validation
+- ✅ **IPFS Integration**: CID validation, extraction, and format conversion
+- ✅ **Keyboard Shortcuts**: Power user navigation (Ctrl+N, Ctrl+F, Ctrl+T, etc.)
+- ✅ **Custom Tooltips**: Enhanced UX with informative tooltips (later removed for simplicity)
+- ✅ **Responsive Design**: Modern flag-style UI with smooth animations
+
+#### **Phase 4: Probing Features ✅ COMPLETED**
+
+- ✅ **DNSLink Detection**: Automatic probing for DNSLink TXT records using DNS-over-HTTPS
+- ✅ **Store-Friendly Implementation**: Uses activeTab permissions instead of broad host permissions
+- ✅ **Smart Domain Parsing**: Handles both `_dnslink.domain.com` and direct domain TXT records
+- ✅ **Local IPFS Gateway Detection**: Probes localhost:8080 with `/ipfs/bafkqaaa` test endpoint
+- ✅ **Local Gateway Preference**: User-configurable checkbox to prefer local gateway when available
+- ✅ **Automatic Fallback**: Falls back to remote gateways when local gateway unavailable
+- ✅ **User Feedback System**: Visual notifications when DNSLink detected with one-click app creation
+- ✅ **Pre-filled Forms**: Auto-populates app creation form with detected DNSLink data
+
+#### **Technical Implementation**
+
+- ✅ **Manifest V3** compliance with service worker
+- ✅ **TypeScript** with strict type checking
+- ✅ **Modular architecture** with well-organized components
+- ✅ **Error handling** and data validation
+- ✅ **Performance optimizations** (debouncing, efficient storage)
+- ✅ **DNS-over-HTTPS Integration**: No external dependencies, browser-native approach
+- ✅ **Chrome Web Store Ready**: Minimal permissions for faster approval
+
+### **🚧 Remaining Work**
+
+#### **Phase 5: UX Polish (In Progress)**
+- 🔄 Icon extraction from websites
+- ⏳ Enhanced extension button feedback
+- ⏳ Visual indicators for different app states
+
+#### **Phase 6: Service Worker Gateway Integration (Planned)**
+- ⏳ Detection of Service Worker gateways (inbrowser.link/dev)
+- ⏳ Configuration storage in indexed DB
+- ⏳ Custom gateway behavior for SW environments
+
+### **📊 Implementation vs. Original Plan**
+
+#### **Enhanced Beyond Original Plan**
+
+- Form state persistence with auto-save
+- Comprehensive theme system with auto-detection
+- Advanced IPFS utilities with CID format handling
+- Rich keyboard shortcuts system
+- Data export/import with validation
+- **CID-based storage architecture** (major improvement over URL-based)
+- **Configurable IPFS gateways** with subdomain resolution support
+- **Unix timestamp storage** for simplified date handling
+- **Store-friendly DNSLink implementation** (DNS-over-HTTPS vs. Helia)
+- **Real-time local gateway detection** with automatic fallback
+- **Smart notification system** for discovered IPFS content
+
+#### **Technical Achievements**
+
+- **Zero bundling required**: Pure browser APIs, no complex build process
+- **Minimal permissions**: Only activeTab, storage, tabs for maximum store compatibility
+- **Performance optimized**: DNS queries cached, local gateway probe with timeout
+- **User-centric design**: One-click discovery-to-app workflow
