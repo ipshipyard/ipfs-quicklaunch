@@ -340,7 +340,7 @@
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: #666;
+            color: var(--text-secondary);
         }
         
         .empty-state-icon {
@@ -360,12 +360,13 @@
         }
         
         .modal-content {
-            background: white;
+            background: var(--bg-secondary);
             margin: 50px auto;
             padding: 20px;
             border-radius: 8px;
             width: 90%;
             max-width: 350px;
+            border: 1px solid var(--border-primary);
         }
         
         .modal-content.large {
@@ -395,6 +396,7 @@
         .modal-title {
             font-size: 16px;
             font-weight: 600;
+            color: var(--text-primary);
         }
         
         .close-button {
@@ -403,7 +405,7 @@
             font-size: 20px;
             cursor: pointer;
             padding: 0;
-            color: #666;
+            color: var(--text-secondary);
         }
         
         .form-group {
@@ -414,16 +416,18 @@
             display: block;
             margin-bottom: 6px;
             font-weight: 500;
-            color: #555;
+            color: var(--text-primary);
         }
         
         .form-input {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-primary);
             border-radius: 6px;
             font-size: 14px;
             box-sizing: border-box;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
         }
         
         .form-actions {
@@ -449,32 +453,34 @@
         }
         
         .btn-primary {
-            background: #3498db;
+            background: var(--accent-primary);
             color: white;
         }
         
         .btn-primary:hover {
-            background: #2980b9;
+            background: var(--accent-hover);
         }
         
         .btn-secondary {
-            background: #e9ecef;
-            color: #333;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
         }
         
         .btn-secondary:hover {
-            background: #dee2e6;
+            background: var(--border-primary);
         }
         
         /* Version Manager Styles */
         .versions-list {
             margin-bottom: 24px;
-            border: 1px solid #e1e8ed;
+            border: 1px solid var(--border-primary);
             border-radius: 8px;
+            background: var(--bg-secondary);
         }
         
         .version-item {
-            border-bottom: 1px solid #f1f3f4;
+            border-bottom: 1px solid var(--border-secondary);
             padding: 16px;
         }
         
@@ -498,7 +504,7 @@
         .version-name {
             font-weight: 600;
             font-size: 14px;
-            color: #2c3e50;
+            color: var(--text-primary);
             margin-bottom: 4px;
             display: flex;
             align-items: center;
@@ -506,7 +512,7 @@
         }
         
         .version-default-badge {
-            background: #27ae60;
+            background: var(--success);
             color: white;
             font-size: 10px;
             font-weight: 500;
@@ -518,21 +524,21 @@
         
         .version-url {
             font-size: 12px;
-            color: #7f8c8d;
+            color: var(--text-secondary);
             word-break: break-all;
             margin-bottom: 4px;
         }
         
         .version-cid {
             font-size: 11px;
-            color: #95a5a6;
+            color: var(--text-tertiary);
             font-family: 'Monaco', 'Menlo', monospace;
             margin-bottom: 4px;
         }
         
         .version-meta {
             font-size: 11px;
-            color: #95a5a6;
+            color: var(--text-tertiary);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -545,7 +551,7 @@
         }
         
         .add-version-section {
-            border-top: 1px solid #e1e8ed;
+            border-top: 1px solid var(--border-primary);
             padding-top: 20px;
             margin-top: 20px;
         }
@@ -553,7 +559,7 @@
         .add-version-section h4 {
             margin: 0 0 16px 0;
             font-size: 16px;
-            color: #2c3e50;
+            color: var(--text-primary);
         }
         
         .form-row {
@@ -568,7 +574,7 @@
         
         .form-help {
             font-size: 11px;
-            color: #7f8c8d;
+            color: var(--text-secondary);
             margin-top: 4px;
         }
         
