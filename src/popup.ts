@@ -685,12 +685,45 @@ class PopupManager {
       if (dnslinkResponse.success && dnslinkResponse.data) {
         this.currentDNSLinkResult = dnslinkResponse.data;
         if (this.currentDNSLinkResult?.hasDNSLink) {
-          this.showDNSLinkNotification();
+          // Check if this domain/CID is already saved
+          if (!this.isDNSLinkAlreadySaved(this.currentDNSLinkResult)) {
+            this.showDNSLinkNotification();
+          }
         }
       }
     } catch (error) {
       console.error('Failed to check DNSLink:', error);
     }
+  }
+
+  /**
+   * Check if DNSLink result is already saved as an app
+   */
+  private isDNSLinkAlreadySaved(dnslinkResult: DNSLinkResult): boolean {
+    if (!dnslinkResult.hasDNSLink || !dnslinkResult.cid) return false;
+
+    // Check if any app has this CID
+    const existingAppByCID = this.apps.find(app => 
+      app.versions.some(version => version.cid === dnslinkResult.cid)
+    );
+
+    if (existingAppByCID) {
+      console.debug('DNSLink CID already saved in app:', existingAppByCID.petname);
+      return true;
+    }
+
+    // Check if any app has this domain name
+    const existingAppByDomain = this.apps.find(app => 
+      app.petname.toLowerCase() === dnslinkResult.domain.toLowerCase() ||
+      app.description?.toLowerCase().includes(dnslinkResult.domain.toLowerCase())
+    );
+
+    if (existingAppByDomain) {
+      console.debug('DNSLink domain already saved in app:', existingAppByDomain.petname);
+      return true;
+    }
+
+    return false;
   }
 
   /**
