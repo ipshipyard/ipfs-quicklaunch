@@ -22,6 +22,14 @@ export interface AppStorage {
   apps: Record<string, App>;
   settings: UserSettings;
   gatewayConfig: GatewayConfig;
+  dnslinkCache: Record<string, DNSLinkCacheEntry>;
+}
+
+export interface DNSLinkCacheEntry {
+  domain: string;
+  lastCID: string;
+  lastChecked: number;
+  associatedAppId?: string;
 }
 
 export interface GatewayConfig {

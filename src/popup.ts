@@ -13,6 +13,7 @@ class PopupManager {
   private formCleanupFunctions: Map<string, () => void> = new Map();
   private currentEditApp: App | null = null;
   private currentDNSLinkResult: DNSLinkResult | null = null;
+  private pendingDNSLinkAssociation: DNSLinkResult | null = null;
 
   constructor() {
     this.init();
@@ -166,6 +167,16 @@ class PopupManager {
         cid,
         description: description || undefined
       });
+
+      // Associate with DNSLink cache if this came from DNSLink detection
+      if (this.pendingDNSLinkAssociation && this.pendingDNSLinkAssociation.cid === cid) {
+        await storage.updateDNSLinkCache(
+          this.pendingDNSLinkAssociation.domain,
+          this.pendingDNSLinkAssociation.cid,
+          newApp.id
+        );
+        this.pendingDNSLinkAssociation = null;
+      }
 
       this.apps.push(newApp);
       this.filteredApps = [...this.apps];
@@ -684,15 +695,208 @@ class PopupManager {
       const dnslinkResponse = await this.sendMessageToBackground('CHECK_DNSLINK', { domain });
       if (dnslinkResponse.success && dnslinkResponse.data) {
         this.currentDNSLinkResult = dnslinkResponse.data;
-        if (this.currentDNSLinkResult?.hasDNSLink) {
-          // Check if this domain/CID is already saved
-          if (!this.isDNSLinkAlreadySaved(this.currentDNSLinkResult)) {
-            this.showDNSLinkNotification();
-          }
+        if (this.currentDNSLinkResult?.hasDNSLink && this.currentDNSLinkResult.cid) {
+          await this.handleDNSLinkDetection(this.currentDNSLinkResult);
         }
       }
     } catch (error) {
       console.error('Failed to check DNSLink:', error);
+    }
+  }
+
+  /**
+   * Handle DNSLink detection with cache checking and version suggestions
+   */
+  private async handleDNSLinkDetection(dnslinkResult: DNSLinkResult): Promise<void> {
+    if (!dnslinkResult.cid) return;
+
+    // Get cached DNSLink entry
+    const cachedEntry = await storage.getDNSLinkEntry(dnslinkResult.domain);
+    
+    if (cachedEntry) {
+      // Check if CID has changed
+      if (cachedEntry.lastCID !== dnslinkResult.cid) {
+        console.log('DNSLink CID updated for domain:', dnslinkResult.domain);
+        
+        // Update cache with new CID
+        await storage.updateDNSLinkCache(dnslinkResult.domain, dnslinkResult.cid, cachedEntry.associatedAppId);
+        
+        // If there's an associated app, suggest adding new version
+        if (cachedEntry.associatedAppId) {
+          const app = await storage.getApp(cachedEntry.associatedAppId);
+          if (app) {
+            this.showVersionUpdateSuggestion(app, dnslinkResult);
+            return;
+          }
+        }
+      } else {
+        // Same CID, no notification needed
+        console.debug('DNSLink CID unchanged for domain:', dnslinkResult.domain);
+        return;
+      }
+    }
+
+    // Check if this domain/CID is already saved
+    if (!this.isDNSLinkAlreadySaved(dnslinkResult)) {
+      // Update cache for new domain
+      await storage.updateDNSLinkCache(dnslinkResult.domain, dnslinkResult.cid);
+      this.showDNSLinkNotification();
+    } else {
+      // Find the app and associate it with the cache entry
+      const existingApp = this.findAppForDNSLink(dnslinkResult);
+      if (existingApp) {
+        await storage.updateDNSLinkCache(dnslinkResult.domain, dnslinkResult.cid, existingApp.id);
+      }
+    }
+  }
+
+  /**
+   * Find existing app that matches DNSLink result
+   */
+  private findAppForDNSLink(dnslinkResult: DNSLinkResult): App | null {
+    // Check by CID first
+    const appByCID = this.apps.find(app => 
+      app.versions.some(version => version.cid === dnslinkResult.cid)
+    );
+    if (appByCID) return appByCID;
+
+    // Check by domain name
+    const appByDomain = this.apps.find(app => 
+      app.petname.toLowerCase() === dnslinkResult.domain.toLowerCase() ||
+      app.description?.toLowerCase().includes(dnslinkResult.domain.toLowerCase())
+    );
+    
+    return appByDomain || null;
+  }
+
+  /**
+   * Show suggestion to add new version for updated DNSLink
+   */
+  private showVersionUpdateSuggestion(app: App, dnslinkResult: DNSLinkResult): void {
+    const notification = document.createElement('div');
+    notification.className = 'version-update-notification';
+    notification.innerHTML = `
+      <div class="version-update-content">
+        <div class="version-update-icon">🔄</div>
+        <div class="version-update-text">
+          <strong>DNSLink Updated!</strong><br>
+          ${app.petname} has a new version available
+        </div>
+        <button class="version-update-add-btn" id="addVersionUpdate">Add Version</button>
+        <button class="version-update-close-btn" id="closeVersionUpdate">×</button>
+      </div>
+    `;
+    notification.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--warning);
+      color: white;
+      padding: 12px 16px;
+      z-index: 10002;
+      box-shadow: 0 2px 8px var(--shadow-light);
+    `;
+
+    const content = notification.querySelector('.version-update-content') as HTMLElement;
+    content.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 400px;
+      margin: 0 auto;
+    `;
+
+    const icon = notification.querySelector('.version-update-icon') as HTMLElement;
+    icon.style.cssText = `
+      font-size: 20px;
+      flex-shrink: 0;
+    `;
+
+    const text = notification.querySelector('.version-update-text') as HTMLElement;
+    text.style.cssText = `
+      flex: 1;
+      font-size: 13px;
+      line-height: 1.3;
+    `;
+
+    const addBtn = notification.querySelector('.version-update-add-btn') as HTMLElement;
+    addBtn.style.cssText = `
+      background: white;
+      color: var(--warning);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+    `;
+
+    const closeBtn = notification.querySelector('.version-update-close-btn') as HTMLElement;
+    closeBtn.style.cssText = `
+      background: none;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    `;
+
+    document.body.insertBefore(notification, document.body.firstChild);
+
+    // Add event listeners
+    addBtn.addEventListener('click', async () => {
+      await this.handleAddVersionUpdate(app, dnslinkResult);
+      document.body.removeChild(notification);
+    });
+
+    closeBtn.addEventListener('click', () => {
+      document.body.removeChild(notification);
+    });
+
+    // Auto-hide after 10 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 10000);
+  }
+
+  /**
+   * Handle adding new version for updated DNSLink
+   */
+  private async handleAddVersionUpdate(app: App, dnslinkResult: DNSLinkResult): Promise<void> {
+    if (!dnslinkResult.cid) return;
+
+    try {
+      const updatedApp = await storage.createVersion({
+        appId: app.id,
+        name: `Updated ${new Date().toLocaleDateString()}`,
+        cid: dnslinkResult.cid,
+        makeDefault: true
+      });
+
+      if (updatedApp) {
+        // Update local apps array
+        const appIndex = this.apps.findIndex(a => a.id === app.id);
+        if (appIndex !== -1) {
+          this.apps[appIndex] = updatedApp;
+          this.filteredApps = [...this.apps];
+        }
+        
+        this.render();
+        this.showTemporaryMessage('New version added successfully!', 'success');
+      }
+    } catch (error) {
+      console.error('Failed to add version:', error);
+      this.showTemporaryMessage('Failed to add new version', 'error');
     }
   }
 
@@ -855,6 +1059,9 @@ class PopupManager {
     if (petnameInput) petnameInput.value = this.currentDNSLinkResult.domain;
     if (cidInput && this.currentDNSLinkResult.cid) cidInput.value = this.currentDNSLinkResult.cid;
     if (descriptionInput) descriptionInput.value = `IPFS site for ${this.currentDNSLinkResult.domain}`;
+    
+    // Store the DNSLink result for later association
+    this.pendingDNSLinkAssociation = this.currentDNSLinkResult;
   }
 
   /**

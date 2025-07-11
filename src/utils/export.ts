@@ -25,7 +25,8 @@ export class ExportManager {
             return acc;
           }, {} as Record<string, any>),
           settings,
-          gatewayConfig: await storage.getGatewayConfig()
+          gatewayConfig: await storage.getGatewayConfig(),
+          dnslinkCache: await storage.getDNSLinkCache()
         }
       };
 
@@ -174,6 +175,14 @@ export class ExportManager {
       // Update settings (merge with current settings)
       if (importData.settings) {
         await storage.updateSettings(importData.settings);
+      }
+
+      // Import DNSLink cache if present
+      if (importData.dnslinkCache) {
+        const dnslinkEntries = Object.values(importData.dnslinkCache);
+        for (const entry of dnslinkEntries) {
+          await storage.updateDNSLinkCache(entry.domain, entry.lastCID, entry.associatedAppId);
+        }
       }
 
       return { appsImported };

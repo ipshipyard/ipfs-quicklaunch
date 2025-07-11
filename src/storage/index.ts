@@ -1,4 +1,4 @@
-import { App, AppStorage, CreateAppRequest, CreateVersionRequest, UpdateAppRequest, UserSettings, GatewayConfig } from '../types/index.js';
+import { App, AppStorage, CreateAppRequest, CreateVersionRequest, UpdateAppRequest, UserSettings, GatewayConfig, DNSLinkCacheEntry } from '../types/index.js';
 import { LocalGatewayProbe } from '../utils/localGateway.js';
 
 const STORAGE_KEY = 'app_launcher_data';
@@ -58,7 +58,8 @@ export class StorageManager {
         ],
         preferLocalGateway: false,
         localGatewayUrl: 'http://localhost:8080'
-      }
+      },
+      dnslinkCache: {}
     };
   }
 
@@ -213,6 +214,32 @@ export class StorageManager {
     const baseGateway = gateway.startsWith('http') ? gateway : `https://${gateway}`;
     const gatewayHost = new URL(baseGateway).hostname;
     return `https://${cid}.ipfs.${gatewayHost}`;
+  }
+
+  async getDNSLinkCache(): Promise<Record<string, DNSLinkCacheEntry>> {
+    const data = this.cache || await this.load();
+    return data.dnslinkCache || {};
+  }
+
+  async updateDNSLinkCache(domain: string, cid: string, appId?: string): Promise<void> {
+    const data = this.cache || await this.load();
+    if (!data.dnslinkCache) {
+      data.dnslinkCache = {};
+    }
+    
+    data.dnslinkCache[domain] = {
+      domain,
+      lastCID: cid,
+      lastChecked: Date.now(),
+      associatedAppId: appId
+    };
+    
+    await this.save(data);
+  }
+
+  async getDNSLinkEntry(domain: string): Promise<DNSLinkCacheEntry | null> {
+    const cache = await this.getDNSLinkCache();
+    return cache[domain] || null;
   }
 
   private generateId(): string {
