@@ -1,7 +1,3 @@
-import { createHeliaHTTP } from '@helia/http';
-import { ipns, type IPNS } from '@helia/ipns';
-import type { Helia } from '@helia/interface';
-
 export interface DNSLinkResult {
   hasDNSLink: boolean;
   cid?: string;
@@ -10,44 +6,28 @@ export interface DNSLinkResult {
 }
 
 export class DNSLinkProbe {
-  private static heliaInstance: Helia | null = null;
-  private static ipnsInstance: IPNS | null = null;
+  private static readonly DNS_OVER_HTTPS_URL = 'https://cloudflare-dns.com/dns-query';
+  private static readonly DNSLINK_PREFIX = 'dnslink=';
+  private static readonly IPFS_PREFIX = '/ipfs/';
 
   /**
-   * Initialize Helia instance
-   */
-  private static async getHelia(): Promise<{ helia: Helia; ipns: IPNS }> {
-    if (!this.heliaInstance || !this.ipnsInstance) {
-      this.heliaInstance = await createHeliaHTTP();
-      this.ipnsInstance = ipns(this.heliaInstance);
-    }
-    return { helia: this.heliaInstance, ipns: this.ipnsInstance };
-  }
-
-  /**
-   * Probe a domain for DNSLink records
+   * Probe a domain for DNSLink records using DNS over HTTPS
    */
   static async probe(domain: string): Promise<DNSLinkResult> {
     try {
       const cleanDomain = this.cleanDomain(domain);
-      const { ipns: ipnsInstance } = await this.getHelia();
       
-      // Use resolveDNSLink to check for DNSLink records
-      try {
-        const result = await ipnsInstance.resolveDNSLink(cleanDomain);
-        
-        return {
-          hasDNSLink: true,
-          cid: result.cid.toString(),
-          domain: cleanDomain,
-          ipnsName: cleanDomain
-        };
-      } catch (error) {
-        console.debug('DNSLink resolution failed for domain:', cleanDomain, error);
+      // Try _dnslink subdomain first (RFC standard)
+      const dnslinkDomain = `_dnslink.${cleanDomain}`;
+      let result = await this.queryTxtRecord(dnslinkDomain);
+      
+      // If no _dnslink record, try the domain itself
+      if (!result.hasDNSLink) {
+        result = await this.queryTxtRecord(cleanDomain);
       }
       
       return {
-        hasDNSLink: false,
+        ...result,
         domain: cleanDomain
       };
     } catch (error) {
@@ -56,6 +36,59 @@ export class DNSLinkProbe {
         hasDNSLink: false,
         domain: domain
       };
+    }
+  }
+
+  /**
+   * Query TXT records for a domain using DNS over HTTPS
+   */
+  private static async queryTxtRecord(domain: string): Promise<DNSLinkResult> {
+    const url = `${this.DNS_OVER_HTTPS_URL}?name=${encodeURIComponent(domain)}&type=TXT`;
+    
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/dns-json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`DNS query failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Check if we have answers
+      if (!data.Answer || !Array.isArray(data.Answer)) {
+        return { hasDNSLink: false, domain };
+      }
+      
+      // Look for DNSLink records
+      for (const answer of data.Answer) {
+        if (answer.type === 16 && answer.data) { // TXT record
+          const txtRecord = answer.data.replace(/"/g, ''); // Remove quotes
+          
+          if (txtRecord.startsWith(this.DNSLINK_PREFIX)) {
+            const dnslinkValue = txtRecord.substring(this.DNSLINK_PREFIX.length);
+            
+            // Check if it's an IPFS link
+            if (dnslinkValue.startsWith(this.IPFS_PREFIX)) {
+              const cid = dnslinkValue.substring(this.IPFS_PREFIX.length);
+              return {
+                hasDNSLink: true,
+                cid,
+                domain,
+                ipnsName: domain
+              };
+            }
+          }
+        }
+      }
+      
+      return { hasDNSLink: false, domain };
+    } catch (error) {
+      console.error('DNS TXT query failed:', error);
+      return { hasDNSLink: false, domain };
     }
   }
 
@@ -113,18 +146,4 @@ export class DNSLinkProbe {
     return false;
   }
 
-  /**
-   * Cleanup Helia instance
-   */
-  static async cleanup(): Promise<void> {
-    if (this.heliaInstance) {
-      try {
-        await this.heliaInstance.stop();
-      } catch (error) {
-        console.error('Error stopping Helia:', error);
-      }
-      this.heliaInstance = null;
-      this.ipnsInstance = null;
-    }
-  }
 }
