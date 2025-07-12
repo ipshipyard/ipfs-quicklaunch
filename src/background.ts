@@ -2,6 +2,12 @@ import { storage } from './storage/index.js';
 import { DNSLinkProbe } from './utils/dnslink.js';
 
 class BackgroundManager {
+  private defaultIcon = {
+    '16': 'icons/icon16.png',
+    '48': 'icons/icon48.png',
+    '128': 'icons/icon128.png'
+  };
+
   constructor() {
     this.init();
   }
@@ -31,6 +37,21 @@ class BackgroundManager {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       this.handleMessage(request, sender, sendResponse);
       return true; // Keep message channel open for async responses
+    });
+
+    // Handle tab updates for DNSLink detection
+    chrome.tabs.onUpdated.addListener(async (_tabId, changeInfo, tab) => {
+      if (changeInfo.status === 'complete' && tab.url) {
+        await this.checkTabForDNSLink(tab);
+      }
+    });
+
+    // Handle tab activation to update icon
+    chrome.tabs.onActivated.addListener(async (activeInfo) => {
+      const tab = await chrome.tabs.get(activeInfo.tabId);
+      if (tab.url) {
+        await this.checkTabForDNSLink(tab);
+      }
     });
   }
 
@@ -100,12 +121,109 @@ class BackgroundManager {
           }
           break;
         
+        
+        case 'IPFS_PATH_DETECTED':
+          // Content script detected IPFS path header
+          console.log('IPFS path detected:', request.data);
+          // We could store this information or trigger notifications here
+          sendResponse({ success: true });
+          break;
+        
         default:
           sendResponse({ success: false, error: 'Unknown message type' });
       }
     } catch (error) {
       console.error('Background script error:', error);
       sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  }
+
+  /**
+   * Check tab for DNSLink and update extension icon accordingly
+   */
+  private async checkTabForDNSLink(tab: chrome.tabs.Tab): Promise<void> {
+    if (!tab.url || !tab.id) return;
+
+    try {
+      const url = new URL(tab.url);
+      
+      // Skip non-web URLs
+      if (!url.hostname || url.protocol !== 'https:' && url.protocol !== 'http:') {
+        await this.setDefaultIcon(tab.id);
+        return;
+      }
+
+      // Check for DNSLink and x-ipfs-path
+      const dnslinkResult = await DNSLinkProbe.probe(url.hostname);
+      
+      if (dnslinkResult.hasDNSLink || dnslinkResult.hasIPFSPath) {
+        await this.setDNSLinkIcon(tab.id);
+        
+        // Update action badge based on detection method
+        const badgeIcon = dnslinkResult.detectionMethod === 'x-ipfs-path' ? '📁' : '🔗';
+        await chrome.action.setBadgeText({
+          text: badgeIcon,
+          tabId: tab.id
+        });
+        
+        await chrome.action.setBadgeBackgroundColor({
+          color: '#3498db',
+          tabId: tab.id
+        });
+        
+        // Update title based on detection method
+        const detectionType = dnslinkResult.detectionMethod === 'x-ipfs-path' ? 'IPFS content' : 'DNSLink';
+        await chrome.action.setTitle({
+          title: `IPFS App Launcher - ${detectionType} detected on ${url.hostname}`,
+          tabId: tab.id
+        });
+      } else {
+        await this.setDefaultIcon(tab.id);
+        await chrome.action.setBadgeText({
+          text: '',
+          tabId: tab.id
+        });
+        
+        await chrome.action.setTitle({
+          title: 'IPFS App Launcher',
+          tabId: tab.id
+        });
+      }
+    } catch (error) {
+      console.error('Error checking tab for DNSLink:', error);
+      if (tab.id) {
+        await this.setDefaultIcon(tab.id);
+      }
+    }
+  }
+
+  /**
+   * Set default extension icon
+   */
+  private async setDefaultIcon(tabId: number): Promise<void> {
+    try {
+      await chrome.action.setIcon({
+        path: this.defaultIcon,
+        tabId
+      });
+    } catch (error) {
+      console.error('Failed to set default icon:', error);
+    }
+  }
+
+  /**
+   * Set DNSLink detected icon (highlighted version)
+   */
+  private async setDNSLinkIcon(tabId: number): Promise<void> {
+    try {
+      // For now, we'll use the same icon but with badge
+      // In the future, we could create special "highlighted" versions
+      await chrome.action.setIcon({
+        path: this.defaultIcon,
+        tabId
+      });
+    } catch (error) {
+      console.error('Failed to set DNSLink icon:', error);
     }
   }
 }
