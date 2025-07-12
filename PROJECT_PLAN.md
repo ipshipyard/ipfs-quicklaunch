@@ -53,9 +53,9 @@
 
 ## Current Implementation Status
 
-### **Development Phase: Phase 4+ Complete (~90% Project Completion)**
+### **Development Phase: Phase 6 Complete (~95% Project Completion)**
 
-The IPFS App Launcher browser extension is now a fully functional, production-ready application with all core features implemented, polished, and enhanced with advanced probing capabilities.
+The IPFS App Launcher browser extension is now a fully functional, production-ready application with all core features implemented, polished, and enhanced with advanced probing capabilities, icon support, and enhanced user feedback.
 
 ### **✅ Completed Features**
 
@@ -102,14 +102,19 @@ The IPFS App Launcher browser extension is now a fully functional, production-re
 - ✅ **DNS-over-HTTPS Integration**: No external dependencies, browser-native approach
 - ✅ **Chrome Web Store Ready**: Minimal permissions for faster approval
 
-### **🚧 Remaining Work**
+### **✅ Phase 5: UX Polish (COMPLETED)**
+- ✅ **Dark Mode Text Visibility**: All text now uses CSS variables for proper theme support
+- ✅ **Settings Modal Scrolling**: Improved modal body scrolling with proper overflow handling
+- ✅ **Smart DNSLink Detection**: Prevents duplicate notifications for already saved sites/CIDs
+- ✅ **DNSLink Domain Persistence**: Full domain tracking with version update suggestions
 
-#### **Phase 5: UX Polish (In Progress)**
-- 🔄 Icon extraction from websites
-- ⏳ Enhanced extension button feedback
-- ⏳ Visual indicators for different app states
+### **✅ Phase 6: Enhanced Feedback & Detection (COMPLETED)**
+- ✅ **Enhanced Extension Button Feedback**: DNSLink detection shows visual badges and title updates
+- ✅ **Visual Indicators**: Extension icon updates with badges when DNSLink is detected
+- ✅ **x-ipfs-path Header Detection**: Detects IPFS content served through gateways via HTTP headers
+- ✅ **App Highlighting**: Currently visited apps are highlighted in the popup interface
 
-#### **Phase 6: Service Worker Gateway Integration (Planned)**
+#### **Phase 7: Service Worker Gateway Integration (Planned)**
 - ⏳ Detection of Service Worker gateways (inbrowser.link/dev)
 - ⏳ Configuration storage in indexed DB
 - ⏳ Custom gateway behavior for SW environments
@@ -129,6 +134,9 @@ The IPFS App Launcher browser extension is now a fully functional, production-re
 - **Store-friendly DNSLink implementation** (DNS-over-HTTPS vs. Helia)
 - **Real-time local gateway detection** with automatic fallback
 - **Smart notification system** for discovered IPFS content
+- **Dual Detection System**: Both DNSLink records and x-ipfs-path header detection
+- **Visual feedback system** with contextual badges and notifications
+- **App highlighting** for currently visited sites
 
 #### **Technical Achievements**
 
