@@ -14,6 +14,7 @@ class PopupManager {
   private currentEditApp: App | null = null;
   private currentDNSLinkResult: DNSLinkResult | null = null;
   private pendingDNSLinkAssociation: DNSLinkResult | null = null;
+  private currentTabUrl: string | null = null;
 
   constructor() {
     this.init();
@@ -24,8 +25,8 @@ class PopupManager {
     await this.loadApps();
     this.setupEventListeners();
     this.initializeTheme();
-    this.render();
-    await this.checkCurrentTabForDNSLink();
+    await this.checkCurrentTabForDNSLink(); // Check tab first to get URL
+    this.render(); // Then render with highlighting
   }
 
   private async loadApps() {
@@ -249,8 +250,14 @@ class PopupManager {
           onDelete: (app) => this.handleAppDelete(app)
         });
         
+        // Check if this app matches the current tab and add active class
+        const flagElement = appFlag.getElement();
+        if (this.isCurrentTabApp(app)) {
+          flagElement.classList.add('active');
+        }
+        
         this.appFlags.set(app.id, appFlag);
-        appGrid.appendChild(appFlag.getElement());
+        appGrid.appendChild(flagElement);
       });
     }
   }
@@ -674,6 +681,59 @@ class PopupManager {
   }
 
   /**
+   * Check if the current tab URL matches any of the stored apps
+   */
+  private isCurrentTabApp(app: App): boolean {
+    if (!this.currentTabUrl) return false;
+
+    try {
+      const currentUrl = new URL(this.currentTabUrl);
+      
+      // Check each version of the app
+      for (const version of app.versions) {
+        try {
+          // Check if the current URL contains the CID in various formats
+          
+          // 1. Check subdomain format: {cid}.ipfs.{gateway}
+          const cidInSubdomain = currentUrl.hostname.startsWith(version.cid + '.ipfs.');
+          if (cidInSubdomain) {
+            return true;
+          }
+          
+          // 2. Check path-based gateway format: /{gateway}/ipfs/{cid}
+          if (currentUrl.pathname.includes(`/ipfs/${version.cid}`)) {
+            return true;
+          }
+          
+          // 3. Check if hostname directly contains CID (for some gateway formats)
+          if (currentUrl.hostname.includes(version.cid)) {
+            return true;
+          }
+          
+          // 4. Check for local gateway format
+          if (currentUrl.hostname === 'localhost' && currentUrl.pathname.includes(`/ipfs/${version.cid}`)) {
+            return true;
+          }
+          
+          // 5. Check for direct CID access (e.g., {cid}.ipfs.inbrowser.link)
+          const hostParts = currentUrl.hostname.split('.');
+          if (hostParts.length >= 3 && hostParts[0] === version.cid && hostParts[1] === 'ipfs') {
+            return true;
+          }
+          
+        } catch (error) {
+          // Continue checking other versions if URL parsing fails
+          continue;
+        }
+      }
+      
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
    * Check current tab for DNSLink
    */
   private async checkCurrentTabForDNSLink(): Promise<void> {
@@ -684,7 +744,8 @@ class PopupManager {
         return;
       }
 
-      const { domain } = tabResponse.data;
+      const { domain, url } = tabResponse.data;
+      this.currentTabUrl = url;
       
       // Skip non-web URLs
       if (domain.startsWith('chrome://') || domain.startsWith('moz-extension://') || domain.startsWith('chrome-extension://')) {
@@ -695,7 +756,7 @@ class PopupManager {
       const dnslinkResponse = await this.sendMessageToBackground('CHECK_DNSLINK', { domain });
       if (dnslinkResponse.success && dnslinkResponse.data) {
         this.currentDNSLinkResult = dnslinkResponse.data;
-        if (this.currentDNSLinkResult?.hasDNSLink && this.currentDNSLinkResult.cid) {
+        if ((this.currentDNSLinkResult?.hasDNSLink || this.currentDNSLinkResult?.hasIPFSPath) && this.currentDNSLinkResult.cid) {
           await this.handleDNSLinkDetection(this.currentDNSLinkResult);
         }
       }
@@ -730,18 +791,30 @@ class PopupManager {
           }
         }
       } else {
-        // Same CID, no notification needed
+        // Same CID, but check if we should still show notification for this session
         console.debug('DNSLink CID unchanged for domain:', dnslinkResult.domain);
+        
+        // If there's an associated app, don't show notification
+        // If no associated app, show notification to allow adding it
+        if (!cachedEntry.associatedAppId) {
+          console.log('CID unchanged but no associated app - showing notification');
+          this.showDNSLinkNotification();
+        }
         return;
       }
     }
 
     // Check if this domain/CID is already saved
-    if (!this.isDNSLinkAlreadySaved(dnslinkResult)) {
+    const isAlreadySaved = this.isDNSLinkAlreadySaved(dnslinkResult);
+    console.log('DNSLink detection - already saved?', isAlreadySaved, 'for domain:', dnslinkResult.domain);
+    
+    if (!isAlreadySaved) {
       // Update cache for new domain
       await storage.updateDNSLinkCache(dnslinkResult.domain, dnslinkResult.cid);
+      console.log('Showing DNSLink notification for:', dnslinkResult.domain);
       this.showDNSLinkNotification();
     } else {
+      console.log('DNSLink already saved, not showing notification');
       // Find the app and associate it with the cache entry
       const existingApp = this.findAppForDNSLink(dnslinkResult);
       if (existingApp) {
@@ -904,7 +977,7 @@ class PopupManager {
    * Check if DNSLink result is already saved as an app
    */
   private isDNSLinkAlreadySaved(dnslinkResult: DNSLinkResult): boolean {
-    if (!dnslinkResult.hasDNSLink || !dnslinkResult.cid) return false;
+    if ((!dnslinkResult.hasDNSLink && !dnslinkResult.hasIPFSPath) || !dnslinkResult.cid) return false;
 
     // Check if any app has this CID
     const existingAppByCID = this.apps.find(app => 
@@ -945,15 +1018,23 @@ class PopupManager {
    * Show DNSLink detection notification
    */
   private showDNSLinkNotification(): void {
-    if (!this.currentDNSLinkResult?.hasDNSLink) return;
+    console.log('showDNSLinkNotification called with:', this.currentDNSLinkResult);
+    
+    if (!this.currentDNSLinkResult || (!this.currentDNSLinkResult.hasDNSLink && !this.currentDNSLinkResult.hasIPFSPath)) {
+      console.log('Not showing notification - no valid DNSLink result');
+      return;
+    }
 
     const notification = document.createElement('div');
     notification.className = 'dnslink-notification';
+    const detectionType = this.currentDNSLinkResult.detectionMethod === 'x-ipfs-path' ? 'IPFS content' : 'DNSLink';
+    const notificationIcon = this.currentDNSLinkResult.detectionMethod === 'x-ipfs-path' ? '📁' : '🔗';
+    
     notification.innerHTML = `
       <div class="dnslink-content">
-        <div class="dnslink-icon">🔗</div>
+        <div class="dnslink-icon">${notificationIcon}</div>
         <div class="dnslink-text">
-          <strong>DNSLink detected!</strong><br>
+          <strong>${detectionType} detected!</strong><br>
           ${this.currentDNSLinkResult.domain} has IPFS content
         </div>
         <button class="dnslink-add-btn" id="addDNSLinkApp">Add App</button>
@@ -968,9 +1049,11 @@ class PopupManager {
       background: var(--accent-primary);
       color: white;
       padding: 12px 16px;
-      z-index: 10002;
+      z-index: 99999;
       box-shadow: 0 2px 8px var(--shadow-light);
     `;
+    
+    console.log('Inserting DNSLink notification into DOM');
 
     const content = notification.querySelector('.dnslink-content') as HTMLElement;
     content.style.cssText = `
@@ -981,8 +1064,8 @@ class PopupManager {
       margin: 0 auto;
     `;
 
-    const icon = notification.querySelector('.dnslink-icon') as HTMLElement;
-    icon.style.cssText = `
+    const iconElement = notification.querySelector('.dnslink-icon') as HTMLElement;
+    iconElement.style.cssText = `
       font-size: 20px;
       flex-shrink: 0;
     `;
@@ -1047,7 +1130,7 @@ class PopupManager {
    * Handle adding DNSLink app
    */
   private async handleAddDNSLinkApp(): Promise<void> {
-    if (!this.currentDNSLinkResult?.hasDNSLink) return;
+    if (!this.currentDNSLinkResult || (!this.currentDNSLinkResult.hasDNSLink && !this.currentDNSLinkResult.hasIPFSPath)) return;
 
     await this.showAddModal();
     
@@ -1063,6 +1146,7 @@ class PopupManager {
     // Store the DNSLink result for later association
     this.pendingDNSLinkAssociation = this.currentDNSLinkResult;
   }
+
 
   /**
    * Show visual indicator that form was auto-saved

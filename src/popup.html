@@ -170,6 +170,18 @@
             transform: translateY(-1px);
         }
         
+        .app-flag.active {
+            border-color: var(--accent-primary);
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 2px var(--accent-primary), 0 4px 12px var(--shadow-medium);
+            transform: translateY(-1px);
+        }
+        
+        .app-flag.active .app-name {
+            color: var(--accent-primary);
+            font-weight: 700;
+        }
+        
         .app-flag-content {
             display: flex;
             align-items: center;
@@ -322,7 +334,7 @@
         
         .version-url {
             font-size: 12px;
-            color: #7f8c8d;
+            color: var(--text-tertiary);
         }
         
         .default-badge {
@@ -330,7 +342,7 @@
             right: 8px;
             top: 50%;
             transform: translateY(-50%);
-            background: #27ae60;
+            background: var(--success);
             color: white;
             font-size: 10px;
             padding: 2px 6px;
@@ -411,12 +423,15 @@
         .modal-body {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 0 4px 20px 0; /* Space for scrollbar and bottom margin */
             min-height: 0; /* Allow flexbox shrinking */
+            max-height: calc(100vh - 140px); /* Take up all available space minus header */
         }
         
         .modal-content.large .modal-body {
             padding: 0 12px 20px 12px; /* Smaller, equal padding on both sides for large modals */
+            max-height: calc(100vh - 140px); /* Take up all available space for large modals */
         }
         
         .modal-title {
@@ -734,6 +749,7 @@
             flex: 1;
             min-width: 200px;
         }
+        
     </style>
 </head>
 <body>
