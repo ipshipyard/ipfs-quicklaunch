@@ -587,6 +587,37 @@
             padding: 8px 12px;
             border-radius: 6px;
             border: 1px solid var(--border-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .copy-cid-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            padding: 4px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        
+        .copy-cid-btn:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+        
+        .copy-cid-btn.copied {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
         }
         
         .version-meta {
