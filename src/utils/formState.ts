@@ -9,7 +9,7 @@ export interface FormState {
 }
 
 export class FormStateManager {
-  private static readonly STORAGE_KEY = 'ipfs_launcher_form_drafts';
+  private static readonly STORAGE_KEY = 'ipfs_spark_form_drafts';
   private static readonly DEBOUNCE_DELAY = 500; // ms
   private debounceTimers: Map<string, number> = new Map();
 

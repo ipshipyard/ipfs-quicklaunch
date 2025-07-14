@@ -21,7 +21,7 @@ class BackgroundManager {
     // Handle extension installation
     chrome.runtime.onInstalled.addListener(async (details) => {
       if (details.reason === 'install') {
-        console.log('App Launcher extension installed');
+        console.log('IPFS Spark extension installed');
         // Initialize storage with default settings
         await storage.init();
       }
@@ -29,7 +29,7 @@ class BackgroundManager {
 
     // Handle extension startup
     chrome.runtime.onStartup.addListener(async () => {
-      console.log('App Launcher extension started');
+      console.log('IPFS Spark extension started');
       await storage.init();
     });
 
@@ -174,7 +174,7 @@ class BackgroundManager {
         // Update title based on detection method
         const detectionType = dnslinkResult.detectionMethod === 'x-ipfs-path' ? 'IPFS content' : 'DNSLink';
         await chrome.action.setTitle({
-          title: `IPFS App Launcher - ${detectionType} detected on ${url.hostname}`,
+          title: `IPFS Spark - ${detectionType} detected on ${url.hostname}`,
           tabId: tab.id
         });
       } else {
@@ -185,7 +185,7 @@ class BackgroundManager {
         });
         
         await chrome.action.setTitle({
-          title: 'IPFS App Launcher',
+          title: 'IPFS Spark',
           tabId: tab.id
         });
       }

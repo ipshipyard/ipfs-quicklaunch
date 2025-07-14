@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "IPFS App Launcher",
+  "name": "IPFS Spark",
   "version": "1.0.0",
-  "description": "IPFS app launcher with petname support and elegant flag UI",
+  "description": "IPFS launcher browser extension with local pet names, version management, and smart CID discovery",
   "permissions": [
     "storage",
     "tabs",
@@ -10,7 +10,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "IPFS App Launcher"
+    "default_title": "IPFS Spark"
   },
   "background": {
     "service_worker": "background.js",

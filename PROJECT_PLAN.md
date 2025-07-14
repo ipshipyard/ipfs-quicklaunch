@@ -55,7 +55,7 @@
 
 ### **Development Phase: Phase 6 Complete (~95% Project Completion)**
 
-The IPFS App Launcher browser extension is now a fully functional, production-ready application with all core features implemented, polished, and enhanced with advanced probing capabilities, icon support, and enhanced user feedback.
+The IPFS Spark browser extension is now a fully functional, production-ready application with all core features implemented, polished, and enhanced with advanced probing capabilities, icon support, and enhanced user feedback.
 
 ### **✅ Completed Features**
 
@@ -117,7 +117,7 @@ The IPFS App Launcher browser extension is now a fully functional, production-re
 ### Phase 7: custom fixes and improvements
 
 - On the version manager modal, add a button to copy CIDs to clipboard
--
+- 
 
 
 #### **Phase 8: Firefox Cross-Browser Compatibility (Planned)**

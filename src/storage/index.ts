@@ -1,7 +1,7 @@
 import { App, AppStorage, CreateAppRequest, CreateVersionRequest, UpdateAppRequest, UserSettings, GatewayConfig, DNSLinkCacheEntry } from '../types/index.js';
 import { LocalGatewayProbe } from '../utils/localGateway.js';
 
-const STORAGE_KEY = 'app_launcher_data';
+const STORAGE_KEY = 'ipfs_spark_data';
 
 export class StorageManager {
   private static instance: StorageManager;

@@ -1,7 +1,7 @@
 {
-  "name": "ipfs-app-launcher-extension",
+  "name": "ipfs-spark-extension",
   "version": "1.0.0",
-  "description": "Browser extension for IPFS app launcher with petname support",
+  "description": "IPFS launcher browser extension with local pet names, version management, and smart CID discovery",
   "main": "src/background.js",
   "scripts": {
     "build": "tsc && cp src/manifest.json dist/ && cp src/popup.html dist/ && cp -r src/icons dist/",
@@ -15,7 +15,7 @@
   "keywords": [
     "browser-extension",
     "chrome-extension",
-    "ipfs-app-launcher",
+    "ipfs-spark",
     "petnames"
   ],
   "author": "",
