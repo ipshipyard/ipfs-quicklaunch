@@ -2,6 +2,11 @@
 
 An experimental browser extension that serves as an IPFS (d)app launcher with pet-name, automatic CID discovery, and intelligent gateway management.
 
+Built and maintained by Interplanetary Shipyard
+
+![Shipyard](https://github.com/user-attachments/assets/39ed3504-bb71-47f6-9bf8-cb9a1698f272)
+
+
 ## ✨ Key Features
 
 - **🏷️ Pet-name System**: Save IPFS apps with memorable, user-chosen names
@@ -12,6 +17,7 @@ An experimental browser extension that serves as an IPFS (d)app launcher with pe
 - **🌙 Theme System**: Light/Dark/Auto modes with system preference detection
 - **💾 Data Management**: Export/import with full backup/restore capabilities
 - **⌨️ Keyboard Shortcuts**: Power user navigation (Ctrl+N, Ctrl+F, etc.)
+
 
 ## 🚀 Quick Start
 
@@ -276,4 +282,4 @@ chrome://extensions/ -> "Load unpacked"
 
 ---
 
-**Built by Shipyard with ❤️ for the IPFS ecosystem**
+**Built by [Shipyard](https://ipshipyard.com/) with ❤️ for the IPFS ecosystem**

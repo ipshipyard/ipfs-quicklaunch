@@ -102,7 +102,7 @@ The IPFS App Launcher browser extension is now a fully functional, production-re
 - ✅ **DNS-over-HTTPS Integration**: No external dependencies, browser-native approach
 - ✅ **Chrome Web Store Ready**: Minimal permissions for faster approval
 
-### **✅ Phase 5: UX Polish (COMPLETED)**
+#### **✅ Phase 5: UX Polish (COMPLETED)**
 - ✅ **Dark Mode Text Visibility**: All text now uses CSS variables for proper theme support
 - ✅ **Settings Modal Scrolling**: Improved modal body scrolling with proper overflow handling
 - ✅ **Smart DNSLink Detection**: Prevents duplicate notifications for already saved sites/CIDs
@@ -114,7 +114,105 @@ The IPFS App Launcher browser extension is now a fully functional, production-re
 - ✅ **x-ipfs-path Header Detection**: Detects IPFS content served through gateways via HTTP headers
 - ✅ **App Highlighting**: Currently visited apps are highlighted in the popup interface
 
-#### **Phase 7: Service Worker Gateway Integration (Planned)**
+### Phase 7: custom fixes and improvements
+
+- On the version manager modal, add a button to copy CIDs to clipboard
+-
+
+
+#### **Phase 8: Firefox Cross-Browser Compatibility (Planned)**
+
+**Objective**: Make the extension work seamlessly on both Chrome and Firefox with minimal code duplication.
+
+**Current Challenge**: Extension uses Manifest V3 (Chrome-only) and Chrome-specific APIs. Firefox only supports Manifest V2 and uses `browser.*` APIs instead of `chrome.*`.
+
+##### **Implementation Strategy**
+
+**1. Dual Manifest Architecture**
+- ⏳ Create `manifest-v2.json` for Firefox alongside existing `manifest-v3.json`
+- ⏳ Implement build-time manifest selection based on target browser
+- ⏳ Map Manifest V3 service worker to Manifest V2 background scripts
+
+**2. API Normalization Layer**
+- ⏳ Install and integrate `webextension-polyfill` package
+- ⏳ Replace all `chrome.*` API calls with `browser.*` throughout codebase
+- ⏳ Create browser-specific API wrappers for divergent functionality
+- ⏳ Handle storage quota differences between browsers
+
+**3. Background Script Compatibility**
+- ⏳ **Chrome**: Keep existing service worker (`background.service_worker`)
+- ⏳ **Firefox**: Convert to persistent background page (`background.scripts`)
+- ⏳ Abstract background script logic into shared modules
+- ⏳ Handle lifecycle differences (service worker vs. persistent page)
+
+**4. Build System Enhancement**
+- ⏳ Update `npm run build` to generate browser-specific distributions
+- ⏳ Create separate output directories: `dist/chrome/` and `dist/firefox/`
+- ⏳ Bundle webextension-polyfill only for Firefox build
+- ⏳ Implement manifest templating system
+
+**5. Content Script & CSP Adjustments**
+- ⏳ Test content script compatibility with Firefox's stricter CSP
+- ⏳ Ensure `x-ipfs-path` header detection works in Firefox
+- ⏳ Validate DNS-over-HTTPS requests work across browsers
+
+**6. Permission Alignment**
+- ⏳ Audit permission differences between Chrome and Firefox
+- ⏳ Use common subset of permissions for maximum compatibility
+- ⏳ Handle browser-specific permission prompts
+
+**7. Testing & Validation**
+- ⏳ Set up Firefox Developer Edition testing environment
+- ⏳ Create cross-browser testing checklist for all features
+- ⏳ Validate DNSLink detection, local gateway probing, and UI consistency
+- ⏳ Test data export/import compatibility between browsers
+
+##### **Technical Changes Required**
+
+**Manifest V2 Conversion:**
+```json
+{
+  "manifest_version": 2,
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "browser_action": {
+    "default_popup": "popup.html"
+  }
+}
+```
+
+**API Migration Pattern:**
+```typescript
+// Before: chrome.storage.local.get()
+// After: browser.storage.local.get()
+```
+
+**Build Script Updates:**
+```bash
+npm run build:chrome  # Generates dist/chrome/
+npm run build:firefox # Generates dist/firefox/
+npm run build:all     # Generates both
+```
+
+##### **Compatibility Matrix**
+
+| Feature | Chrome Status | Firefox Status | Notes |
+|---------|---------------|----------------|-------|
+| DNSLink Detection | ✅ Working | ⏳ Testing Required | DNS-over-HTTPS should work |
+| Local Gateway Probe | ✅ Working | ⏳ Testing Required | Localhost requests may differ |
+| x-ipfs-path Headers | ✅ Working | ⏳ Testing Required | Content script compatibility |
+| Storage API | ✅ Working | ⏳ Polyfill Required | Quota differences |
+| Theme System | ✅ Working | ⏳ CSS Validation | Should work with minor adjustments |
+
+##### **Distribution Strategy**
+- ⏳ Chrome Web Store submission (existing V3 build)
+- ⏳ Firefox Add-ons (AMO) submission (new V2 build)
+- ⏳ Maintain unified codebase with browser-specific builds
+- ⏳ Document installation instructions for both browsers
+
+#### **Phase 8: Service Worker Gateway Integration (Future)**
 - ⏳ Detection of Service Worker gateways (inbrowser.link/dev)
 - ⏳ Configuration storage in indexed DB
 - ⏳ Custom gateway behavior for SW environments
