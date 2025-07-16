@@ -1,5 +1,5 @@
 {
-  "name": "ipfs-spark-extension",
+  "name": "ipfs-quicklaunch-extension",
   "version": "1.0.0",
   "description": "IPFS launcher browser extension with local pet names, version management, and smart CID discovery",
   "main": "src/background.js",
@@ -15,7 +15,7 @@
   "keywords": [
     "browser-extension",
     "chrome-extension",
-    "ipfs-spark",
+    "ipfs-quicklaunch",
     "petnames"
   ],
   "author": "",

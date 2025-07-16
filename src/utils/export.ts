@@ -9,7 +9,7 @@ export interface ExportData {
 
 export class ExportManager {
   private static readonly EXPORT_VERSION = '1.0.0';
-  private static readonly FILE_NAME = 'ipfs-spark-backup.json';
+  private static readonly FILE_NAME = 'ipfs-quicklaunch-backup.json';
 
   static async exportData(): Promise<void> {
     try {

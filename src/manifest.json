@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "IPFS Spark",
+  "name": "IPFS QuickLaunch",
   "version": "1.0.0",
   "description": "IPFS launcher browser extension with local pet names, version management, and smart CID discovery",
   "permissions": [
@@ -10,7 +10,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "IPFS Spark"
+    "default_title": "IPFS QuickLaunch"
   },
   "background": {
     "service_worker": "background.js",

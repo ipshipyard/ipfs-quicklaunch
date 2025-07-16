@@ -55,7 +55,7 @@
 
 ### **Development Phase: Phase 6 Complete (~95% Project Completion)**
 
-The IPFS Spark browser extension is now a fully functional, production-ready application with all core features implemented, polished, and enhanced with advanced probing capabilities, icon support, and enhanced user feedback.
+The IPFS QuickLaunch browser extension is now a fully functional, production-ready application with all core features implemented, polished, and enhanced with advanced probing capabilities, icon support, and enhanced user feedback.
 
 ### **✅ Completed Features**
 

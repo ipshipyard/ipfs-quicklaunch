@@ -1,6 +1,6 @@
-# IPFS Spark Browser Extension
+# IPFS QuickLaunch Browser Extension
 
-IPFS launcher browser extension with local pet names, version management, and smart CID discovery. An experimental browser extension that serves as an IPFS (d)app launcher with intelligent gateway management.
+IPFS launcher is an experimental browser extension with local pet names, version management, smart CID discovery, and gateway management.
 
 Built and maintained by Interplanetary Shipyard
 
