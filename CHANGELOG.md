@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/ipshipyard/ipfs-quicklaunch/compare/v1.0.0...v1.0.1) (2025-07-18)
+
+### Documentation
+
+* update installation docs ([a4150b6](https://github.com/ipshipyard/ipfs-quicklaunch/commit/a4150b689bcadaa01d20f18ae08605ab0b76bc90))
+
 ## 1.0.0 (2025-07-18)
 
 ### Features
