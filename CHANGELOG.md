@@ -1,0 +1,11 @@
+## 1.0.0 (2025-07-18)
+
+### Features
+
+* update icon to ipfs ([1bc6413](https://github.com/ipshipyard/ipfs-quicklaunch/commit/1bc64139fdb4903f3bb7809634b047965bb555c6))
+
+### Trivial Changes
+
+* change default gateways ([af1b88f](https://github.com/ipshipyard/ipfs-quicklaunch/commit/af1b88f7cdae065f383e0ae48e94e8edc314aced))
+* remove tooltips ([01c1e6c](https://github.com/ipshipyard/ipfs-quicklaunch/commit/01c1e6cc86537ee6550c88017eb410b85bfbe62d))
+* rename to quick launch ([a617402](https://github.com/ipshipyard/ipfs-quicklaunch/commit/a617402844cf851fbc77697f16fcc6e5d9de8cad))

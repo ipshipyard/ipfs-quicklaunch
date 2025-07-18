@@ -1,6 +1,6 @@
 {
   "name": "ipfs-quicklaunch",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "IPFS launcher browser extension with local pet names, version management, and smart CID discovery",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/ipshipyard/ipfs-quicklaunch",
@@ -107,8 +107,14 @@
         "@semantic-release/github",
         {
           "assets": [
-            { "path": "dist", "label": "Browser extension background" },
-            { "path": "src", "label": "Source" }
+            {
+              "path": "dist",
+              "label": "Browser extension background"
+            },
+            {
+              "path": "src",
+              "label": "Source"
+            }
           ]
         }
       ],
