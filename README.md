@@ -2,7 +2,7 @@
 
 IPFS launcher is an experimental browser extension with local pet names, version management, smart CID discovery, and gateway management.
 
-Built and maintained by Interplanetary Shipyard
+**Built by [Shipyard](https://ipshipyard.com/) with ❤️ for the IPFS ecosystem**
 
 ![Shipyard](https://github.com/user-attachments/assets/39ed3504-bb71-47f6-9bf8-cb9a1698f272)
 
@@ -18,8 +18,14 @@ Built and maintained by Interplanetary Shipyard
 - **💾 Data Management**: Export/import with full backup/restore capabilities
 - **⌨️ Keyboard Shortcuts**: Power user navigation (Ctrl+N, Ctrl+F, etc.)
 
+## Disclaimer
+
+This extension is an experimental proof of concept. It's intended to demonstrate UX patterns around local CID management, versioning, and gateway flexibility in the IPFS ecosystem.
+
 
 ## 🚀 Quick Start
+
+To get started with the IPFS QuickLaunch browser extension, you need to build it from source. Follow these steps
 
 ```bash
 # Install dependencies
@@ -30,12 +36,16 @@ npm run build
 
 # Watch for changes during development
 npm run watch
-
-# Clean build artifacts
-npm run clean
 ```
 
-Load the `dist/` folder as an unpacked extension in Chrome Developer Mode.
+### Installation in Chrome
+
+1. Make sure to build the extension first using `npm run build`.
+2. Open Chrome and navigate to `chrome://extensions`.
+3. Enable Developer Mode by clicking the toggle switch next to Developer mode.
+4. Click the Load unpacked button and select the `dist` in the extension directory.
+
+
 
 ## 🏗️ Architecture Overview
 
