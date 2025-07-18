@@ -19,6 +19,7 @@
     "clean": "rm -rf dist"
   },
   "files": [
+    "src",
     "dist"
   ],
   "release": {
@@ -105,7 +106,10 @@
       [
         "@semantic-release/github",
         {
-          "assets": "dist/**"
+          "assets": [
+            { "path": "dist", "label": "Browser extension background" },
+            { "path": "src", "label": "Source" }
+          ]
         }
       ],
       [
