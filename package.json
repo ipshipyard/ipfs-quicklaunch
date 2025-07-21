@@ -102,13 +102,19 @@
         }
       ],
       "@semantic-release/changelog",
-      "@semantic-release/npm",
+      [
+        "@semantic-release/npm",
+        {
+          "npmPublish": true,
+          "tarballDir": "dist"
+        }
+      ],
       [
         "@semantic-release/github",
         {
           "assets": [
             {
-              "path": "*.tgz",
+              "path": "dist/*.tgz",
               "label": "Browser extension background"
             }
           ]
