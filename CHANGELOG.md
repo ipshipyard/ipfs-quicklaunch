@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/ipshipyard/ipfs-quicklaunch/compare/v1.0.1...v1.0.2) (2025-07-21)
+
+### Documentation
+
+* update plan re manifest v3 in firefox ([cd65a46](https://github.com/ipshipyard/ipfs-quicklaunch/commit/cd65a46657a3e7548beccebf8d3cc6dfbd4e1d42))
+
 ## [1.0.1](https://github.com/ipshipyard/ipfs-quicklaunch/compare/v1.0.0...v1.0.1) (2025-07-18)
 
 ### Documentation
