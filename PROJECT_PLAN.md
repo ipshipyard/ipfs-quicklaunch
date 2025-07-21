@@ -124,32 +124,31 @@ The IPFS QuickLaunch browser extension is now a fully functional, production-rea
 
 **Objective**: Make the extension work seamlessly on both Chrome and Firefox with minimal code duplication.
 
-**Current Challenge**: Extension uses Manifest V3 (Chrome-only) and Chrome-specific APIs. Firefox only supports Manifest V2 and uses `browser.*` APIs instead of `chrome.*`.
+**Current Status**: Extension uses Manifest V3 which is now supported by Firefox (as of Firefox 109+). See the [Firefox Manifest V3 migration guide](https://extensionworkshop.com/documentation/develop/manifest-v3-migration-guide/) for implementation details.
 
 ##### **Implementation Strategy**
 
-**1. Dual Manifest Architecture**
-- ⏳ Create `manifest-v2.json` for Firefox alongside existing `manifest-v3.json`
-- ⏳ Implement build-time manifest selection based on target browser
-- ⏳ Map Manifest V3 service worker to Manifest V2 background scripts
+**1. Manifest V3 Compatibility**
+- ⏳ Firefox now supports Manifest V3, so existing manifest can be used as base
+- ⏳ Test current service worker implementation in Firefox
+- ⏳ Address any Firefox-specific differences in V3 implementation
 
 **2. API Normalization Layer**
-- ⏳ Install and integrate `webextension-polyfill` package
-- ⏳ Replace all `chrome.*` API calls with `browser.*` throughout codebase
-- ⏳ Create browser-specific API wrappers for divergent functionality
-- ⏳ Handle storage quota differences between browsers
+- ⏳ Install and integrate `webextension-polyfill` package for broader compatibility
+- ⏳ Replace `chrome.*` API calls with `browser.*` throughout codebase
+- ⏳ Handle minor API differences between Chrome and Firefox implementations
+- ⏳ Test storage quota and permission differences
 
-**3. Background Script Compatibility**
-- ⏳ **Chrome**: Keep existing service worker (`background.service_worker`)
-- ⏳ **Firefox**: Convert to persistent background page (`background.scripts`)
-- ⏳ Abstract background script logic into shared modules
-- ⏳ Handle lifecycle differences (service worker vs. persistent page)
+**3. Service Worker Compatibility**
+- ⏳ **Both browsers**: Use existing Manifest V3 service worker approach
+- ⏳ Test service worker lifecycle in Firefox
+- ⏳ Ensure event handling works consistently across browsers
 
 **4. Build System Enhancement**
 - ⏳ Update `npm run build` to generate browser-specific distributions
 - ⏳ Create separate output directories: `dist/chrome/` and `dist/firefox/`
-- ⏳ Bundle webextension-polyfill only for Firefox build
-- ⏳ Implement manifest templating system
+- ⏳ Bundle webextension-polyfill for cross-browser compatibility
+- ⏳ Handle any browser-specific manifest adjustments
 
 **5. Content Script & CSP Adjustments**
 - ⏳ Test content script compatibility with Firefox's stricter CSP
@@ -169,25 +168,16 @@ The IPFS QuickLaunch browser extension is now a fully functional, production-rea
 
 ##### **Technical Changes Required**
 
-**Manifest V2 Conversion:**
-```json
-{
-  "manifest_version": 2,
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": true
-  },
-  "browser_action": {
-    "default_popup": "popup.html"
-  }
-}
-```
-
 **API Migration Pattern:**
 ```typescript
 // Before: chrome.storage.local.get()
-// After: browser.storage.local.get()
+// After: browser.storage.local.get() (with webextension-polyfill)
 ```
+
+**Firefox-Specific Manifest V3 Considerations:**
+- Service workers are supported in Firefox 109+
+- Some API differences may still exist despite V3 support
+- Testing required for all extension features
 
 **Build Script Updates:**
 ```bash
@@ -208,7 +198,7 @@ npm run build:all     # Generates both
 
 ##### **Distribution Strategy**
 - ⏳ Chrome Web Store submission (existing V3 build)
-- ⏳ Firefox Add-ons (AMO) submission (new V2 build)
+- ⏳ Firefox Add-ons (AMO) submission (V3 build with polyfill)
 - ⏳ Maintain unified codebase with browser-specific builds
 - ⏳ Document installation instructions for both browsers
 
