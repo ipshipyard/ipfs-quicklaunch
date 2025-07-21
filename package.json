@@ -108,12 +108,8 @@
         {
           "assets": [
             {
-              "path": "dist",
+              "path": "*.tgz",
               "label": "Browser extension background"
-            },
-            {
-              "path": "src",
-              "label": "Source"
             }
           ]
         }
