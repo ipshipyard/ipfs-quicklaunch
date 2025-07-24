@@ -115,7 +115,7 @@
           "assets": [
             {
               "path": "dist/*.tgz",
-              "label": "Browser extension background"
+              "label": "Browser extension build"
             }
           ]
         }
