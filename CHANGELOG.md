@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/ipshipyard/ipfs-quicklaunch/compare/v1.0.2...v1.1.0) (2025-07-24)
+
+### Features
+
+* rename from petnames to nicknames ([96bf43f](https://github.com/ipshipyard/ipfs-quicklaunch/commit/96bf43f79782ada2dc9adb8b7c3231c957c55086))
+
 ## [1.0.2](https://github.com/ipshipyard/ipfs-quicklaunch/compare/v1.0.1...v1.0.2) (2025-07-21)
 
 ### Documentation
