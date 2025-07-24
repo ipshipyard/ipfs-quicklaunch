@@ -61,7 +61,7 @@ The IPFS QuickLaunch browser extension is now a fully functional, production-rea
 
 #### **Core Functionality**
 
-- ✅ App creation, editing, and deletion with petnames
+- ✅ App creation, editing, and deletion with nicknames
 - ✅ Multiple version management per app with CID/hash tracking
 - ✅ One-click app launching in new tabs
 - ✅ Search and filtering capabilities

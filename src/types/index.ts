@@ -1,6 +1,6 @@
 export interface App {
   id: string;
-  petname: string;
+  nickname: string;
   description?: string;
   icon?: string;
   versions: AppVersion[];
@@ -46,7 +46,7 @@ export interface UserSettings {
 }
 
 export interface CreateAppRequest {
-  petname: string;
+  nickname: string;
   cid: string;
   description?: string;
   tags?: string[];
@@ -55,7 +55,7 @@ export interface CreateAppRequest {
 
 export interface UpdateAppRequest {
   id: string;
-  petname?: string;
+  nickname?: string;
   description?: string;
   tags?: string[];
 }

@@ -149,7 +149,7 @@ export class ExportManager {
           });
 
           await storage.createApp({
-            petname: app.petname,
+            nickname: app.nickname,
             cid: app.versions.find(v => v.isDefault)?.cid || app.versions[0]?.cid || '',
             description: app.description,
             tags: app.tags,

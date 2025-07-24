@@ -20,7 +20,7 @@ export class VersionManager {
     modal.innerHTML = `
       <div class="modal-content large">
         <div class="modal-header">
-          <div class="modal-title">Manage Versions - ${this.app.petname}</div>
+          <div class="modal-title">Manage Versions - ${this.app.nickname}</div>
           <button class="close-button" id="closeVersionModal">&times;</button>
         </div>
         <div class="modal-body">
@@ -243,7 +243,7 @@ export class VersionManager {
           
           const updatedApp = await storage.updateApp({
             id: this.app.id,
-            petname: this.app.petname,
+            nickname: this.app.nickname,
             description: this.app.description,
             tags: this.app.tags
           });
@@ -270,7 +270,7 @@ export class VersionManager {
             
             const updatedApp = await storage.updateApp({
               id: this.app.id,
-              petname: this.app.petname,
+              nickname: this.app.nickname,
               description: this.app.description,
               tags: this.app.tags
             });

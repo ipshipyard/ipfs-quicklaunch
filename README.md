@@ -9,7 +9,7 @@ IPFS launcher is an experimental browser extension with local pet names, version
 
 ## ✨ Key Features
 
-- **🏷️ Pet-name System**: Save IPFS apps with memorable, user-chosen names
+- **🏷️ Nickname System**: Save IPFS apps with memorable, user-chosen names
 - **📦 Version Management**: Track multiple versions per app with automatic updates
 - **🔍 Smart Discovery**: Automatic DNSLink and `x-ipfs-path` header detection
 - **🎨 Visual Feedback**: Extension badge notifications and app highlighting
@@ -114,7 +114,7 @@ src/
 ```typescript
 interface App {
   id: string                    // Unique identifier
-  petname: string              // User-chosen friendly name
+  nickname: string             // User-chosen friendly name
   description?: string         // Optional description
   icon?: string               // Optional icon URL
   versions: AppVersion[]      // Multiple versions per app

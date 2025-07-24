@@ -110,8 +110,8 @@ class PopupManager {
       // Set up auto-save for this form
       this.setupFormAutoSave('addAppForm', form);
       
-      const petnameInput = document.getElementById('petname') as HTMLInputElement;
-      petnameInput?.focus();
+      const nicknameInput = document.getElementById('nickname') as HTMLInputElement;
+      nicknameInput?.focus();
     }
   }
 
@@ -136,7 +136,7 @@ class PopupManager {
   private handleSearch(query: string) {
     const searchTerm = query.toLowerCase();
     this.filteredApps = this.apps.filter(app => 
-      app.petname.toLowerCase().includes(searchTerm) ||
+      app.nickname.toLowerCase().includes(searchTerm) ||
       app.description?.toLowerCase().includes(searchTerm) ||
       app.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
       app.versions.some(version => 
@@ -153,18 +153,18 @@ class PopupManager {
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
     
-    const petname = formData.get('petname') as string;
+    const nickname = formData.get('nickname') as string;
     const cid = formData.get('cid') as string;
     const description = formData.get('description') as string;
 
-    if (!petname || !cid) {
+    if (!nickname || !cid) {
       alert('Please fill in all required fields');
       return;
     }
 
     try {
       const newApp = await storage.createApp({
-        petname,
+        nickname,
         cid,
         description: description || undefined
       });
@@ -352,16 +352,16 @@ class PopupManager {
       modal.style.display = 'block';
       
       // Populate form with current app data
-      const petnameInput = document.getElementById('editPetname') as HTMLInputElement;
+      const nicknameInput = document.getElementById('editNickname') as HTMLInputElement;
       const descriptionInput = document.getElementById('editDescription') as HTMLInputElement;
       
-      if (petnameInput) petnameInput.value = this.currentEditApp.petname;
+      if (nicknameInput) nicknameInput.value = this.currentEditApp.nickname;
       if (descriptionInput) descriptionInput.value = this.currentEditApp.description || '';
       
       // Set up auto-save for this form
       this.setupFormAutoSave('editAppForm', form);
       
-      petnameInput?.focus();
+      nicknameInput?.focus();
     }
   }
 
@@ -382,10 +382,10 @@ class PopupManager {
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
     
-    const petname = formData.get('petname') as string;
+    const nickname = formData.get('nickname') as string;
     const description = formData.get('description') as string;
 
-    if (!petname) {
+    if (!nickname) {
       alert('Please fill in the app name');
       return;
     }
@@ -393,7 +393,7 @@ class PopupManager {
     try {
       const updatedApp = await storage.updateApp({
         id: this.currentEditApp.id,
-        petname,
+        nickname,
         description: description || undefined
       });
 
@@ -835,7 +835,7 @@ class PopupManager {
 
     // Check by domain name
     const appByDomain = this.apps.find(app => 
-      app.petname.toLowerCase() === dnslinkResult.domain.toLowerCase() ||
+      app.nickname.toLowerCase() === dnslinkResult.domain.toLowerCase() ||
       app.description?.toLowerCase().includes(dnslinkResult.domain.toLowerCase())
     );
     
@@ -853,7 +853,7 @@ class PopupManager {
         <div class="version-update-icon">🔄</div>
         <div class="version-update-text">
           <strong>DNSLink Updated!</strong><br>
-          ${app.petname} has a new version available
+          ${app.nickname} has a new version available
         </div>
         <button class="version-update-add-btn" id="addVersionUpdate">Add Version</button>
         <button class="version-update-close-btn" id="closeVersionUpdate">×</button>
@@ -985,18 +985,18 @@ class PopupManager {
     );
 
     if (existingAppByCID) {
-      console.debug('DNSLink CID already saved in app:', existingAppByCID.petname);
+      console.debug('DNSLink CID already saved in app:', existingAppByCID.nickname);
       return true;
     }
 
     // Check if any app has this domain name
     const existingAppByDomain = this.apps.find(app => 
-      app.petname.toLowerCase() === dnslinkResult.domain.toLowerCase() ||
+      app.nickname.toLowerCase() === dnslinkResult.domain.toLowerCase() ||
       app.description?.toLowerCase().includes(dnslinkResult.domain.toLowerCase())
     );
 
     if (existingAppByDomain) {
-      console.debug('DNSLink domain already saved in app:', existingAppByDomain.petname);
+      console.debug('DNSLink domain already saved in app:', existingAppByDomain.nickname);
       return true;
     }
 
@@ -1135,11 +1135,11 @@ class PopupManager {
     await this.showAddModal();
     
     // Pre-fill the form with DNSLink data
-    const petnameInput = document.getElementById('petname') as HTMLInputElement;
+    const nicknameInput = document.getElementById('nickname') as HTMLInputElement;
     const cidInput = document.getElementById('cid') as HTMLInputElement;
     const descriptionInput = document.getElementById('description') as HTMLInputElement;
 
-    if (petnameInput) petnameInput.value = this.currentDNSLinkResult.domain;
+    if (nicknameInput) nicknameInput.value = this.currentDNSLinkResult.domain;
     if (cidInput && this.currentDNSLinkResult.cid) cidInput.value = this.currentDNSLinkResult.cid;
     if (descriptionInput) descriptionInput.value = `IPFS site for ${this.currentDNSLinkResult.domain}`;
     

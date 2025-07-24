@@ -38,12 +38,12 @@ export class AppFlag {
       <div class="app-flag-content">
         <div class="app-icon">${this.getAppIcon()}</div>
         <div class="app-details">
-          <div class="app-name" title="${this.app.petname}">${this.app.petname}</div>
+          <div class="app-name" title="${this.app.nickname}">${this.app.nickname}</div>
           <div class="app-url" title="${defaultVersion?.cid || ''}">${this.formatCid(defaultVersion?.cid || '')}</div>
           ${versionCount > 1 ? `<div class="app-versions">${versionCount} versions</div>` : ''}
         </div>
         <div class="app-actions">
-          <button class="action-btn launch-btn" title="Launch ${this.app.petname}">
+          <button class="action-btn launch-btn" title="Launch ${this.app.nickname}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M7 7h10v10M7 17L17 7"/>
             </svg>
@@ -71,9 +71,9 @@ export class AppFlag {
 
   private getAppIcon(): string {
     if (this.app.icon) {
-      return `<img src="${this.app.icon}" alt="${this.app.petname}" class="app-icon-img">`;
+      return `<img src="${this.app.icon}" alt="${this.app.nickname}" class="app-icon-img">`;
     }
-    return this.app.petname.charAt(0).toUpperCase();
+    return this.app.nickname.charAt(0).toUpperCase();
   }
 
   private formatCid(cid: string): string {
@@ -265,7 +265,7 @@ export class AppFlag {
         this.showVersionManager();
         break;
       case 'delete':
-        if (confirm(`Are you sure you want to delete "${this.app.petname}"?`)) {
+        if (confirm(`Are you sure you want to delete "${this.app.nickname}"?`)) {
           this.onDelete(this.app);
         }
         break;

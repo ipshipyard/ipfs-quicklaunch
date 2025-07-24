@@ -81,7 +81,7 @@ export class StorageManager {
 
     const app: App = {
       id: appId,
-      petname: request.petname,
+      nickname: request.nickname,
       description: request.description,
       icon: undefined,
       versions: [{
@@ -110,7 +110,7 @@ export class StorageManager {
       return null;
     }
 
-    if (request.petname !== undefined) app.petname = request.petname;
+    if (request.nickname !== undefined) app.nickname = request.nickname;
     if (request.description !== undefined) app.description = request.description;
     if (request.tags !== undefined) app.tags = request.tags;
 
