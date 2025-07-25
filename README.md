@@ -1,6 +1,6 @@
 # IPFS QuickLaunch Browser Extension
 
-IPFS launcher is an experimental browser extension with local pet names, version management, smart CID discovery, and gateway management.
+IPFS QuickLaunch is an experimental browser extension with local nicknames, version management, smart CID discovery, and gateway management.
 
 **Built by [Shipyard](https://ipshipyard.com/) with ❤️ for the IPFS ecosystem**
 
