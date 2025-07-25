@@ -1,3 +1,13 @@
+## [1.1.1](https://github.com/ipshipyard/ipfs-quicklaunch/compare/v1.1.0...v1.1.1) (2025-07-25)
+
+### Trivial Changes
+
+* rename release asset ([c10d3b8](https://github.com/ipshipyard/ipfs-quicklaunch/commit/c10d3b8bae760ac34b8f699cd98029478f950ee8))
+
+### Documentation
+
+* update readme ([9677a92](https://github.com/ipshipyard/ipfs-quicklaunch/commit/9677a92624a92e2e76bd20c41f0dcf3529861006))
+
 ## [1.1.0](https://github.com/ipshipyard/ipfs-quicklaunch/compare/v1.0.2...v1.1.0) (2025-07-24)
 
 ### Features
