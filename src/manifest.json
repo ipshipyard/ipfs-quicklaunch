@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "IPFS QuickLaunch",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "IPFS launcher browser extension with local pet names, version management, and smart CID discovery",
   "permissions": [
     "storage",
