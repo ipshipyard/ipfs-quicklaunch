@@ -17,10 +17,9 @@
     "build": "npm run sync-version && tsc && cp src/manifest.json dist/ && cp src/popup.html dist/ && cp -r src/icons dist/",
     "package": "npm run build && web-ext build --source-dir=dist --artifacts-dir=. --filename=ipfs-quicklaunch-{version}.zip --overwrite-dest",
     "start": "npm run build && web-ext run --source-dir=dist --target=chromium",
-    "start:firefox": "npm run build && web-ext run --source-dir=dist --target=firefox",
     "release": "aegir release",
     "watch": "tsc --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist ipfs-quicklaunch-*.zip"
   },
   "files": [
     "src",

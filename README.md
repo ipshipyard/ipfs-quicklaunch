@@ -25,7 +25,7 @@ This extension is an experimental proof of concept. It's intended to demonstrate
 
 ## 🚀 Quick Start
 
-To get started with the IPFS QuickLaunch browser extension, you need to build it from source. Follow these steps
+To get started with the IPFS QuickLaunch browser extension, you need to build it from source. Follow these steps:
 
 ```bash
 # Install dependencies
@@ -34,16 +34,50 @@ npm install
 # Build the extension
 npm run build
 
-# Watch for changes during development
-npm run watch
+# Create a .zip for Chrome Web Store
+npm run package
 ```
+
+### Development Commands
+
+```bash
+# Run extension in Chrome for development
+npm start
+
+# Watch TypeScript files for changes
+npm run watch
+
+# Clean build directory
+npm run clean
+```
+
+### Available npm Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run build` | Compiles TypeScript and copies assets to `dist/` directory |
+| `npm run package` | Builds and creates a `.zip` file ready for Chrome Web Store submission |
+| `npm start` | Builds and launches the extension in Chrome/Chromium for development |
+| `npm run watch` | Watches TypeScript files and recompiles on changes |
+| `npm run clean` | Removes the `dist/` build directory |
+| `npm run sync-version` | Syncs version from `package.json` to `manifest.json` (runs automatically during build) |
 
 ### Installation in Chrome
 
-1. Make sure to build the extension first using `npm run build`.
-2. Open Chrome and navigate to `chrome://extensions`.
-3. Enable Developer Mode by clicking the toggle switch next to Developer mode.
-4. Click the Load unpacked button and select the `dist` in the extension directory.
+#### For Development (automatic)
+1. Run `npm start` to build and launch the extension in Chrome
+2. The extension will be automatically loaded and reloaded when you make changes
+3. Chrome will open with the extension pre-installed for testing
+
+#### For Development (manual)
+1. Run `npm run build` to compile the extension
+2. Open Chrome and navigate to `chrome://extensions`
+3. Enable Developer Mode by clicking the toggle switch
+4. Click "Load unpacked" and select the `dist/` directory
+
+#### For Chrome Web Store Publishing
+1. Run `npm run package` to create `ipfs-quicklaunch-{version}.zip`
+2. Upload the generated `.zip` file to [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/developer/dashboard)
 
 
 
@@ -265,11 +299,17 @@ interface DNSLinkCacheEntry {
 # Install dependencies
 npm install
 
-# Development with auto-rebuild
+# Development - launches in Chrome with auto-reload
+npm start
+
+# Or watch TypeScript files for manual reload
 npm run watch
 
-# Production build
+# Production build for testing
 npm run build
+
+# Create .zip for Chrome Web Store
+npm run package
 
 # Load dist/ folder in Chrome Developer Mode
 chrome://extensions/ -> "Load unpacked"
