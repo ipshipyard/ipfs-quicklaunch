@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/ipshipyard/ipfs-quicklaunch/compare/v1.1.1...v1.2.0) (2025-08-11)
+
+### Features
+
+* `npm run package` and `npm start` ([#5](https://github.com/ipshipyard/ipfs-quicklaunch/issues/5)) ([8de385a](https://github.com/ipshipyard/ipfs-quicklaunch/commit/8de385afdf3af9c672a406e56e390e2d810bf596))
+
 ## [1.1.1](https://github.com/ipshipyard/ipfs-quicklaunch/compare/v1.1.0...v1.1.1) (2025-07-25)
 
 ### Trivial Changes
