@@ -13,7 +13,7 @@
   },
   "main": "src/background.js",
   "scripts": {
-    "sync-version": "node -e \"const fs=require('fs'); const pkg=require('./package.json'); const m=require('./src/manifest.json'); if(m.version!==pkg.version){m.version=pkg.version; fs.writeFileSync('src/manifest.json', JSON.stringify(m,null,2)+'\\n'); console.log('✓ Updated manifest.json version to '+pkg.version)}else{console.log('✓ Version already in sync: '+pkg.version)}\"",
+    "sync-version": "node scripts/sync-version.mjs",
     "build": "npm run sync-version && tsc && cp src/manifest.json dist/ && cp src/popup.html dist/ && cp -r src/icons dist/",
     "package": "npm run build && web-ext build --source-dir=dist --artifacts-dir=. --filename=ipfs-quicklaunch-{version}.zip --overwrite-dest",
     "start": "npm run build && web-ext run --source-dir=dist --target=chromium",
