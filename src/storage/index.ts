@@ -57,7 +57,8 @@ export class StorageManager {
           'inbrowser.dev'
         ],
         preferLocalGateway: false,
-        localGatewayUrl: 'http://localhost:8080'
+        localGatewayUrl: 'http://localhost:8080',
+        dnsOverHttpsUrl: 'https://cloudflare-dns.com/dns-query'
       },
       dnslinkCache: {}
     };

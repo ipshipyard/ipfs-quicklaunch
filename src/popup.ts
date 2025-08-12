@@ -55,6 +55,7 @@ class PopupManager {
     const cancelEditButton = document.getElementById('cancelEditButton');
     const editAppForm = document.getElementById('editAppForm') as HTMLFormElement;
     const preferLocalGateway = document.getElementById('preferLocalGateway') as HTMLInputElement;
+    const saveDnsOverHttps = document.getElementById('saveDnsOverHttps');
 
     addButton?.addEventListener('click', () => this.showAddModal());
     searchBox?.addEventListener('input', (e) => this.handleSearch((e.target as HTMLInputElement).value));
@@ -73,6 +74,7 @@ class PopupManager {
     cancelEditButton?.addEventListener('click', () => this.hideEditModal());
     editAppForm?.addEventListener('submit', (e) => this.handleEditApp(e));
     preferLocalGateway?.addEventListener('change', (e) => this.handleLocalGatewayToggle((e.target as HTMLInputElement).checked));
+    saveDnsOverHttps?.addEventListener('click', () => this.handleSaveDnsOverHttps());
 
     // Close modal when clicking outside
     addAppModal?.addEventListener('click', (e) => {
@@ -297,8 +299,9 @@ class PopupManager {
     const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
     const gatewaySelect = document.getElementById('gatewaySelect') as HTMLSelectElement;
     const preferLocalGateway = document.getElementById('preferLocalGateway') as HTMLInputElement;
+    const dnsOverHttpsInput = document.getElementById('dnsOverHttpsInput') as HTMLInputElement;
     
-    if (settingsModal && themeSelect && gatewaySelect && preferLocalGateway) {
+    if (settingsModal && themeSelect && gatewaySelect && preferLocalGateway && dnsOverHttpsInput) {
       // Update theme select to current value
       themeSelect.value = themeManager.getTheme();
       
@@ -310,6 +313,9 @@ class PopupManager {
         // Update local gateway preference
         preferLocalGateway.checked = gatewayConfig.preferLocalGateway || false;
         
+        // Update DNS over HTTPS URL
+        dnsOverHttpsInput.value = gatewayConfig.dnsOverHttpsUrl || '';
+
         // Check if current gateway is in the predefined options
         const predefinedOptions = ['dweb.link', 'inbrowser.link', 'inbrowser.dev'];
         
@@ -503,6 +509,33 @@ class PopupManager {
     } catch (error) {
       console.error('Failed to update local gateway preference:', error);
       this.showTemporaryMessage('Failed to update preference', 'error');
+    }
+  }
+
+  private async handleSaveDnsOverHttps(): Promise<void> {
+    const dnsOverHttpsInput = document.getElementById('dnsOverHttpsInput') as HTMLInputElement;
+    const dnsOverHttpsUrl = dnsOverHttpsInput.value.trim();
+
+    if (!dnsOverHttpsUrl) {
+      this.showTemporaryMessage('Please enter a DNS over HTTPS URL', 'error');
+      return;
+    }
+
+    // Validate URL format
+    try {
+      const url = new URL(dnsOverHttpsUrl);
+
+      // Basic validation - should be HTTPS and have dns-query path or similar
+      if (url.protocol !== 'https:') {
+        this.showTemporaryMessage('DNS over HTTPS URL must use HTTPS', 'error');
+        return;
+      }
+
+      await storage.updateGatewayConfig({ dnsOverHttpsUrl });
+      this.showTemporaryMessage('DNS over HTTPS URL updated successfully!', 'success');
+    } catch (error) {
+      console.error('Failed to save DNS over HTTPS URL:', error);
+      this.showTemporaryMessage('Please enter a valid HTTPS URL', 'error');
     }
   }
 
