@@ -1,3 +1,13 @@
+## [1.2.1](https://github.com/ipshipyard/ipfs-quicklaunch/compare/v1.2.0...v1.2.1) (2025-08-12)
+
+### Bug Fixes
+
+* add package-lock.json ([58aa819](https://github.com/ipshipyard/ipfs-quicklaunch/commit/58aa819329b0aaa64136a96a3c6b1f6c6f0083e1))
+
+### Trivial Changes
+
+* bump manifest to v1.2.0 ([5e50c23](https://github.com/ipshipyard/ipfs-quicklaunch/commit/5e50c232ad5462e3cb26a98c8bf474413815056b))
+
 ## [1.2.0](https://github.com/ipshipyard/ipfs-quicklaunch/compare/v1.1.1...v1.2.0) (2025-08-11)
 
 ### Features
