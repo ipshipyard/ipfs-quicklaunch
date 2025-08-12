@@ -45,4 +45,4 @@ jobs:
           CLIENT_ID: ${{ secrets.CHROME_CLIENT }}
           CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
-          EXTENSION_ID: ${{ vars.EXTENSION_ID }}
+          EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
