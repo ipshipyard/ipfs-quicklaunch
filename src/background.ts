@@ -100,7 +100,8 @@ class BackgroundManager {
         
         case 'CHECK_DNSLINK':
           try {
-            const result = await DNSLinkProbe.probe(request.data.domain);
+            const gatewayConfig = await storage.getGatewayConfig();
+            const result = await DNSLinkProbe.probe(request.data.domain, gatewayConfig.dnsOverHttpsUrl);
             sendResponse({ success: true, data: result });
           } catch (error) {
             sendResponse({ success: false, error: error instanceof Error ? error.message : 'DNSLink check failed' });
@@ -154,7 +155,8 @@ class BackgroundManager {
       }
 
       // Check for DNSLink and x-ipfs-path
-      const dnslinkResult = await DNSLinkProbe.probe(url.hostname);
+      const gatewayConfig = await storage.getGatewayConfig();
+      const dnslinkResult = await DNSLinkProbe.probe(url.hostname, gatewayConfig.dnsOverHttpsUrl);
       
       if (dnslinkResult.hasDNSLink || dnslinkResult.hasIPFSPath) {
         await this.setDNSLinkIcon(tab.id);
