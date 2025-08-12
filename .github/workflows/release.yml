@@ -27,3 +27,7 @@ jobs:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       UCI_GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      client_id: ${{ secrets.CHROME_CLIENT }}
+      client_secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+      refresh_token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+      extension_id: ${{ env.EXTENSION_ID }}
