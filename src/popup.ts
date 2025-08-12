@@ -314,7 +314,7 @@ class PopupManager {
         preferLocalGateway.checked = gatewayConfig.preferLocalGateway || false;
         
         // Update DNS over HTTPS URL
-        dnsOverHttpsInput.value = gatewayConfig.dnsOverHttpsUrl || '';
+        dnsOverHttpsInput.value = gatewayConfig.dnsOverHttpsUrl;
 
         // Check if current gateway is in the predefined options
         const predefinedOptions = ['dweb.link', 'inbrowser.link', 'inbrowser.dev'];
