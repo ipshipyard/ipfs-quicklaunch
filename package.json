@@ -15,8 +15,8 @@
   "scripts": {
     "sync-version": "node scripts/sync-version.mjs",
     "build": "npm run sync-version && tsc && cp src/manifest.json dist/ && cp src/popup.html dist/ && cp -r src/icons dist/",
-    "package": "npm run build && web-ext build --source-dir=dist --artifacts-dir=. --filename=ipfs-quicklaunch.zip --overwrite-dest",
-    "publish:chrome-store": "npx cws-publish $CHROME_CLIENT_ID $CHROME_CLIENT_SECRET $CHROME_REFRESH_TOKEN ipfs-quicklaunch.zip $CHROME_EXTENSION_ID",
+    "package": "web-ext build --source-dir=dist --artifacts-dir=. --filename=ipfs-quicklaunch.zip --overwrite-dest",
+    "publish:chrome-store": "npx cws-publish \"$CHROME_CLIENT_ID\" \"$CHROME_CLIENT_SECRET\" \"$CHROME_REFRESH_TOKEN\" ipfs-quicklaunch.zip \"$CHROME_EXTENSION_ID\"",
     "release": "aegir release",
     "start": "npm run build && web-ext run --source-dir=dist --target=chromium",
     "watch": "tsc --watch",
