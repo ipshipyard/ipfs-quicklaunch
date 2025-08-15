@@ -31,14 +31,15 @@ jobs:
   publish-extension:
     runs-on: ubuntu-latest
     needs: js-test-and-release
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: needs.js-test-and-release.outputs.release == 'true'
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: npm
-      - run: npm ci
+      - uses: ipfs/aegir/actions/cache-node-modules@main
       - run: npm run package
       - run: npm run publish:chrome-store
         env:
