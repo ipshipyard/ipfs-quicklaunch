@@ -2,9 +2,12 @@
 
 IPFS QuickLaunch is an experimental browser extension with local nicknames, version management, smart CID discovery, and gateway management.
 
+[Install from the Chrome Web Store](https://ipfs.fyi/quicklaunch)
+
 **Built by [Shipyard](https://ipshipyard.com/) with ❤️ for the IPFS ecosystem**
 
 ![Shipyard](https://github.com/user-attachments/assets/39ed3504-bb71-47f6-9bf8-cb9a1698f272)
+
 
 
 ## ✨ Key Features
