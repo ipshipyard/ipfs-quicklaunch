@@ -8,25 +8,24 @@ export interface DNSLinkResult {
 }
 
 export class DNSLinkProbe {
-  private static readonly DNS_OVER_HTTPS_URL = 'https://cloudflare-dns.com/dns-query';
   private static readonly DNSLINK_PREFIX = 'dnslink=';
   private static readonly IPFS_PREFIX = '/ipfs/';
 
   /**
    * Probe a domain for DNSLink records and x-ipfs-path headers
    */
-  static async probe(domain: string): Promise<DNSLinkResult> {
+  static async probe(domain: string, dnsOverHttpsUrl: string): Promise<DNSLinkResult> {
     try {
       const cleanDomain = this.cleanDomain(domain);
       
       // Try DNSLink first (preferred method)
       // Try _dnslink subdomain first (RFC standard)
       const dnslinkDomain = `_dnslink.${cleanDomain}`;
-      let result = await this.queryTxtRecord(dnslinkDomain);
+      let result = await this.queryTxtRecord(dnslinkDomain, dnsOverHttpsUrl);
       
       // If no _dnslink record, try the domain itself
       if (!result.hasDNSLink) {
-        result = await this.queryTxtRecord(cleanDomain);
+        result = await this.queryTxtRecord(cleanDomain, dnsOverHttpsUrl);
       }
       
       // If DNSLink found, return it
@@ -62,8 +61,8 @@ export class DNSLinkProbe {
   /**
    * Query TXT records for a domain using DNS over HTTPS
    */
-  private static async queryTxtRecord(domain: string): Promise<DNSLinkResult> {
-    const url = `${this.DNS_OVER_HTTPS_URL}?name=${encodeURIComponent(domain)}&type=TXT`;
+  private static async queryTxtRecord(domain: string, dnsOverHttpsUrl: string): Promise<DNSLinkResult> {
+    const url = `${dnsOverHttpsUrl}?name=${encodeURIComponent(domain)}&type=TXT`;
     
     try {
       const response = await fetch(url, {

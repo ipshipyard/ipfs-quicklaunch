@@ -2,6 +2,7 @@ import { App, AppStorage, CreateAppRequest, CreateVersionRequest, UpdateAppReque
 import { LocalGatewayProbe } from '../utils/localGateway.js';
 
 const STORAGE_KEY = 'ipfs_spark_data';
+const DEFAULT_DNS_OVER_HTTPS_URL = 'https://cloudflare-dns.com/dns-query';
 
 export class StorageManager {
   private static instance: StorageManager;
@@ -57,7 +58,8 @@ export class StorageManager {
           'inbrowser.dev'
         ],
         preferLocalGateway: false,
-        localGatewayUrl: 'http://localhost:8080'
+        localGatewayUrl: 'http://localhost:8080',
+        dnsOverHttpsUrl: DEFAULT_DNS_OVER_HTTPS_URL
       },
       dnslinkCache: {}
     };
@@ -181,7 +183,14 @@ export class StorageManager {
 
   async getGatewayConfig(): Promise<GatewayConfig> {
     const data = this.cache || await this.load();
-    return data.gatewayConfig;
+    const config = data.gatewayConfig;
+
+    // Ensure dnsOverHttpsUrl has a default value for existing installations
+    if (!config.dnsOverHttpsUrl) {
+      config.dnsOverHttpsUrl = DEFAULT_DNS_OVER_HTTPS_URL;
+    }
+
+    return config;
   }
 
   async updateGatewayConfig(config: Partial<GatewayConfig>): Promise<GatewayConfig> {

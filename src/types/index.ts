@@ -37,6 +37,7 @@ export interface GatewayConfig {
   customGateways: string[];
   preferLocalGateway: boolean;
   localGatewayUrl: string;
+  dnsOverHttpsUrl: string;
 }
 
 export interface UserSettings {

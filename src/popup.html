@@ -903,9 +903,17 @@
                             Prefer local IPFS gateway (localhost:8080)
                         </label>
                     </div>
+                    <div class="settings-row">
+                        <label class="settings-label">
+                            DNS over HTTPS URL:
+                            <input type="text" class="form-input" id="dnsOverHttpsInput" placeholder="https://cloudflare-dns.com/dns-query">
+                        </label>
+                        <button type="button" class="btn btn-secondary" id="saveDnsOverHttps">Save</button>
+                    </div>
                     <div class="settings-help">
                         Choose which IPFS gateway to use for launching apps from CIDs. URLs will be constructed using subdomain gateway resolution https://{cid}.ipfs.gateway.com<br>
-                        When enabled, the extension will try to use your local IPFS gateway first if available.
+                        When enabled, the extension will try to use your local IPFS gateway first if available.<br>
+                        DNS over HTTPS URL is used for DNSLink resolution. Common providers: Cloudflare (cloudflare-dns.com/dns-query), Google (dns.google/dns-query), Quad9 (dns.quad9.net/dns-query).
                     </div>
                 </div>
                 
